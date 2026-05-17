@@ -1,0 +1,13 @@
+{
+  "name": "tagger-next",
+  "compatibility_date": "2024-09-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".open-next/cloudflare-pages",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tagger-d1",
+      "database_id": "0db95838-6916-4566-b59f-50dd89c6a892"
+    }
+  ]
+}
