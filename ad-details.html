@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Details - Tagger</title>
+    <!-- Dynamic Meta Tags for SEO & Social Sharing -->
+    <meta name="description" content="Check out this ad on Tagger - The best marketplace.">
+    <meta property="og:title" content="Ad Details - Tagger">
+    <meta property="og:description" content="Check out this luxury item on Tagger.">
+    <meta property="og:image" content="assets/img/og-placeholder.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                        success: '#00C853',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Apply theme immediately to prevent flashing
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        .gallery-main-container {
+            height: 500px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #mainImage {
+            transition: opacity 0.3s ease-in-out, transform 0.5s ease;
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .gallery-main-container:hover #mainImage {
+            transform: scale(1.05);
+        }
+
+        #ad-map-container {
+            z-index: 1;
+        }
+
+        .gallery-thumb {
+            width: 100px;
+            height: 70px;
+            cursor: pointer;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .gallery-thumb:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .gallery-thumb.active {
+            opacity: 1;
+            border-color: #FF6B00;
+            box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <!-- Leaflet Maps CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body
+    class="bg-gray-100 dark:bg-gray-900 font-sans leading-normal tracking-normal text-gray-800 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+
+    <!-- Breadcrumb -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-sm text-gray-500">
+        <a href="index.html" class="hover:text-primary" data-translate="home">Home</a> /
+        <a href="categories.html" class="hover:text-primary" data-translate="motors">Motors</a> /
+        <a href="search.html" class="hover:text-primary" data-translate="breadcrumbToyota">Toyota</a> /
+        <span class="text-gray-800" data-translate="breadcrumbCamry">Toyota Camry 2024</span>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 animate-fade-in">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Left Column: Gallery & Description -->
+            <div class="w-full lg:w-2/3">
+                <!-- Gallery -->
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-8 border dark:border-gray-700">
+                    <div class="gallery-main-container group">
+                        <img id="mainImage" src="https://placehold.co/800x500?text=Loading..." alt="Ad Main Image">
+                        <!-- Navigation Arrows (Optional but nice) -->
+                        <div
+                            class="absolute inset-0 flex justify-between items-center px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="prevImage()"
+                                class="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <button onclick="nextImage()"
+                                class="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="thumb-container"
+                        class="flex p-4 gap-4 overflow-x-auto bg-gray-50 dark:bg-gray-800/50 border-t dark:border-gray-700 hide-scrollbar scroll-smooth">
+                        <!-- Thumbnails injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="bg-white rounded-xl shadow-sm p-8 mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 border-b pb-4" data-translate="description">
+                        Description</h2>
+                    <p id="ad-description" class="text-gray-700 leading-relaxed mb-6 whitespace-pre-line">
+                        Loading description...
+                    </p>
+
+                    <h3 class="font-bold text-lg mb-4 text-gray-900 mt-6" data-translate="details">Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-8">
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-500" data-translate="categoryLabel">Category</span>
+                            <span id="detail-category" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-500" data-translate="locationLabel">Location</span>
+                            <span id="detail-city" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-year" class="flex justify-between border-b pb-2" style="display:none">
+                            <span class="text-gray-500" data-translate="year">Year</span>
+                            <span id="detail-year" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-kilometers" class="flex justify-between border-b pb-2" style="display:none">
+                            <span class="text-gray-500" data-translate="kilometers">Kilometers</span>
+                            <span id="detail-kilometers" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-condition" class="flex justify-between border-b pb-2" style="display:none">
+                            <span class="text-gray-500" data-translate="condition">Condition</span>
+                            <span id="detail-condition" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-bedrooms" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="bedrooms">Bedrooms</span>
+                            <span id="detail-bedrooms" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-bathrooms" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="bathrooms">Bathrooms</span>
+                            <span id="detail-bathrooms" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-property-type" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="propertyType">Property Type</span>
+                            <span id="detail-property-type" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-area" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="area">Area</span>
+                            <span id="detail-area" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-completion-status" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="completionStatus">Completion Status</span>
+                            <span id="detail-completion-status" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-furnished" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="furnished">Furnished</span>
+                            <span id="detail-furnished" class="font-medium text-gray-900">-</span>
+                        </div>
+                        <div id="item-payment-method" class="flex justify-between border-b pb-2 hidden">
+                            <span class="text-gray-500" data-translate="paymentMethod">Payment Method</span>
+                            <span id="detail-payment-method" class="font-medium text-gray-900">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Amenities Chips -->
+                    <div id="amenities-section" class="hidden mt-6 pt-6 border-t dark:border-gray-700">
+                        <h4 class="font-bold text-gray-900 dark:text-white mb-3" data-translate="amenities">Amenities
+                        </h4>
+                        <div id="amenities-list" class="flex flex-wrap gap-2">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Reviews Section -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 mb-8 border dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-6 border-b dark:border-gray-700 pb-4">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Seller Reviews</h2>
+                        <div class="flex items-center gap-2">
+                            <div id="seller-avg-rating" class="text-2xl font-bold text-accent">0.0</div>
+                            <div id="seller-total-reviews" class="text-sm text-gray-500">(0 reviews)</div>
+                        </div>
+                    </div>
+
+                    <!-- Review Form -->
+                    <div id="review-form-container" class="mb-10 bg-gray-50 dark:bg-gray-700/30 p-6 rounded-xl hidden">
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-4">Rate your experience</h3>
+                        <form id="review-form">
+                            <div class="mb-4">
+                                <label
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rating</label>
+                                <div class="star-rating">
+                                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5"
+                                        title="5 stars">★</label>
+                                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4"
+                                        title="4 stars">★</label>
+                                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3"
+                                        title="3 stars">★</label>
+                                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2"
+                                        title="2 stars">★</label>
+                                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1"
+                                        title="1 star">★</label>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Comment</label>
+                                <textarea id="review-comment" rows="3"
+                                    class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                                    placeholder="Tell others about your experience..."></textarea>
+                            </div>
+                            <button type="submit"
+                                class="bg-accent text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-600 transition">Submit
+                                Review</button>
+                        </form>
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div id="reviews-list" class="space-y-6">
+                        <!-- Reviews injected via JS -->
+                        <div class="text-center py-10 text-gray-500">Loading reviews...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Price & Seller Info -->
+            <div class="w-full lg:w-1/3 space-y-6">
+
+                <!-- Price Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border dark:border-gray-700">
+                    <div class="flex justify-between items-start mb-2">
+                        <h1 id="ad-title" class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                            Loading...</h1>
+                        <button id="favorite-btn" class="text-gray-400 hover:text-red-500 transition-colors p-1 group">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-center mb-6 text-sm">
+                        <div class="flex items-center text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4 mr-1 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span id="postedTime">Recently</span>
+                        </div>
+                        <div class="flex items-center text-gray-500 dark:text-gray-400">
+                            <span class="city-label">UAE</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-orange-50 dark:bg-accent/10 rounded-xl p-4 mb-6 relative">
+                        <div id="sold-badge"
+                            class="hidden absolute -top-3 -right-3 bg-red-600 text-white px-4 py-1.5 rounded-full font-bold shadow-lg transform rotate-12 z-10"
+                            data-translate="sold">
+                            SOLD
+                        </div>
+                        <div class="text-3xl font-bold text-accent mb-0">
+                            <span id="priceValue">0</span> <span class="text-lg currency-label">AED</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6 px-1">
+                        <div class="flex items-center text-gray-500 text-xs">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            <span id="viewCount">0</span> <span class="ml-1">views</span>
+                        </div>
+                        <span
+                            class="text-accent text-xs font-bold uppercase tracking-wider bg-accent/10 px-2 py-0.5 rounded">Verified</span>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <button id="call-seller-btn"
+                            class="w-full bg-accent text-white py-3.5 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg shadow-accent/20 flex justify-center items-center">
+                            <svg class="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                                </path>
+                            </svg>
+                            <span data-translate="call">Call Seller</span>
+                        </button>
+                        <button id="chat-seller-btn"
+                            class="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg flex justify-center items-center">
+                            <svg class="w-5 h-5 mr-2 rtl:ml-2 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                                </path>
+                            </svg>
+                            <span data-translate="chat">Send Message</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Seller Card -->
+                <div class="bg-white rounded-xl shadow-sm p-6 border dark:border-gray-700 dark:bg-gray-800">
+                    <h2 class="font-bold text-gray-900 dark:text-white mb-4" data-translate="sellerInfo">Seller
+                        Information</h2>
+                    <div class="flex items-center mb-4">
+                        <a href="#" id="seller-avatar-link" class="block">
+                            <div id="seller-avatar"
+                                class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-xl font-bold text-gray-600 overflow-hidden">
+                                ??</div>
+                        </a>
+                        <div class="ml-4 rtl:mr-4 rtl:ml-0">
+                            <a href="#" id="seller-name-link" class="block hover:underline">
+                                <div id="seller-name"
+                                    class="font-bold text-primary dark:text-white flex items-center gap-1">Loading...
+                                </div>
+                            </a>
+                            <div id="seller-joined" class="text-sm text-gray-500"><span
+                                    data-translate="memberSince">Member since</span>
+                                ...</div>
+                        </div>
+                    </div>
+                    <a href="#" id="view-seller-profile"
+                        class="block text-center w-full border border-gray-300 dark:border-gray-600 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                        data-translate="viewProfile">View Profile</a>
+                </div>
+
+                <!-- Map Location (Dynamic) -->
+                <div id="sidebar-map-section"
+                    class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border dark:border-gray-700 transition-all duration-500">
+                    <div id="sidebar-map-container" class="h-48 w-full bg-gray-100 dark:bg-gray-700 relative">
+                        <!-- Loading State -->
+                        <div
+                            class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 map-loader">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                        </div>
+                    </div>
+                    <div
+                        class="p-3 bg-gray-50 dark:bg-gray-800/50 border-t dark:border-gray-700 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300"
+                                data-translate="mapLocation">Map Location</span>
+                        </div>
+                        <a href="#" id="google-maps-link" target="_blank"
+                            class="text-[10px] text-accent hover:underline flex items-center gap-1">
+                            <span data-translate="viewOnGoogleMaps">View on Maps</span>
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Safety Tips -->
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
+                    <h3 class="font-bold mb-2 flex items-center"><svg class="w-4 h-4 mr-1 rtl:ml-1 rtl:mr-0" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
+                        </svg> <span data-translate="safetyTips">Safety Tips</span></h3>
+                    <ul class="list-disc list-inside space-y-1 ml-1 text-xs rtl:mr-1 rtl:ml-0">
+                        <li data-translate="meetPublic">Meet in a public place.</li>
+                        <li data-translate="checkItem">Check the item before you buy.</li>
+                        <li data-translate="payAfter">Pay only after collecting the item.</li>
+                    </ul>
+                </div>
+
+                <!-- Report Button -->
+                <button id="open-report-modal"
+                    class="w-full text-center text-xs text-red-500 hover:underline mt-4 flex items-center justify-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                    <span>Report this ad</span>
+                </button>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Report Modal -->
+    <div id="report-modal" class="fixed inset-0 bg-black/50 z-[100] hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md overflow-hidden animate-fade-in shadow-2xl">
+            <div class="p-6 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold dark:text-white">Report Ad</h3>
+                <button onclick="closeReportModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <form id="report-form" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason</label>
+                    <select id="report-reason" required
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:ring-accent focus:border-accent">
+                        <option value="">Select a reason</option>
+                        <option value="Inappropriate">Inappropriate Content</option>
+                        <option value="Fraud">Fraud / Scam</option>
+                        <option value="Duplicate">Duplicate Ad</option>
+                        <option value="WrongCategory">Wrong Category</option>
+                        <option value="Sold">Already Sold / Unavailable</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Details
+                        (Optional)</label>
+                    <textarea id="report-details" rows="3"
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:ring-accent focus:border-accent"></textarea>
+                </div>
+                <button type="submit"
+                    class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition">Submit
+                    Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        let currentImages = [];
+        let currentIndex = 0;
+
+        async function loadAdDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!id) return;
+
+            // Safe fallback functions to prevent crashing if SEO functions are undefined
+            const safeUpdateMetaTags = typeof updateMetaTags === 'function' ? updateMetaTags : () => { };
+            const safeInjectJSONLD = typeof injectJSONLD === 'function' ? injectJSONLD : () => { };
+
+            try {
+                const response = await apiClient.getAd(id);
+                const ad = response.data;
+                currentImages = ad.images || [];
+
+                // Update Title & Page Title
+                const siteTitle = `${ad.title} - Tagger`;
+                document.title = siteTitle;
+
+                // Update Meta Tags for SEO & Social Sharing
+                safeUpdateMetaTags(ad);
+
+                // Update Title & Description with correct IDs to avoid translation overwrite
+                document.getElementById('ad-title').textContent = ad.title;
+                document.getElementById('ad-description').textContent = ad.description;
+
+                // Update Price & Views
+                if (document.getElementById('priceValue')) document.getElementById('priceValue').textContent = ad.price ? ad.price.toLocaleString() : '0';
+                if (document.getElementById('viewCount')) document.getElementById('viewCount').textContent = ad.views || 0;
+
+                // Handle GPS Map in Sidebar
+                if (ad.latitude && ad.longitude) {
+                    const mapSection = document.getElementById('sidebar-map-section');
+                    if (mapSection) {
+                        mapSection.classList.remove('hidden');
+                        setTimeout(() => {
+                            try {
+                                if (typeof L !== 'undefined') {
+                                    const map = L.map('sidebar-map-container', {
+                                        center: [ad.latitude, ad.longitude],
+                                        zoom: 14,
+                                        scrollWheelZoom: false,
+                                        zoomControl: false
+                                    });
+                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                        attribution: '© OpenStreetMap'
+                                    }).addTo(map);
+
+                                    // Add marker with custom popup
+                                    const marker = L.marker([ad.latitude, ad.longitude]).addTo(map);
+
+                                    // Remove loader
+                                    const loader = mapSection.querySelector('.map-loader');
+                                    if (loader) loader.remove();
+
+                                    // External map links
+                                    const gMapsLink = document.getElementById('google-maps-link');
+                                    if (gMapsLink) {
+                                        gMapsLink.href = `https://www.google.com/maps/search/?api=1&query=${ad.latitude},${ad.longitude}`;
+                                    }
+                                }
+                            } catch (mapErr) {
+                                console.warn('Leaflet map error:', mapErr);
+                            }
+                        }, 500);
+                    }
+                }
+
+                // Inject Structured Data (JSON-LD)
+                safeInjectJSONLD(ad);
+
+                // Handle Sold Status
+                if (ad.status === 'sold') {
+                    const soldBadge = document.getElementById('sold-badge');
+                    if (soldBadge) soldBadge.classList.remove('hidden');
+
+                    // Disable contact buttons if sold
+                    const chatBtn = document.getElementById('chat-seller-btn');
+                    const callBtn = document.getElementById('call-seller-btn');
+                    if (chatBtn) {
+                        chatBtn.disabled = true;
+                        chatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        chatBtn.innerHTML = '<span>Item Sold</span>';
+                    }
+                    if (callBtn) {
+                        callBtn.disabled = true;
+                        callBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+
+                if (ad.createdAt) {
+                    const date = new Date(ad.createdAt);
+                    document.getElementById('postedTime').textContent = `Posted ${date.toLocaleDateString()}`;
+                }
+
+                // Update City
+                document.querySelectorAll('.city-label').forEach(el => el.textContent = ad.city);
+
+                // Handle Favorite Button
+                const favoriteBtn = document.getElementById('favorite-btn');
+                if (favoriteBtn) {
+                    // Use a small delay or check to ensure main.js has loaded favorites
+                    const updateFavUI = () => {
+                        const isFav = (window.userFavorites || []).includes(String(ad.id));
+                        if (isFav) {
+                            favoriteBtn.classList.add('text-red-500');
+                            favoriteBtn.querySelector('svg').setAttribute('fill', 'currentColor');
+                        } else {
+                            favoriteBtn.classList.remove('text-red-500');
+                            favoriteBtn.querySelector('svg').setAttribute('fill', 'none');
+                        }
+                    };
+
+                    // Initial check
+                    updateFavUI();
+                    
+                    // Re-check after a short delay to account for main.js async loading
+                    setTimeout(updateFavUI, 500);
+
+                    favoriteBtn.onclick = (e) => {
+                        window.toggleFav(e, ad.id, favoriteBtn);
+                    };
+                }
+
+                // Hide Report Button for Owner
+                const currentUserForReport = JSON.parse(localStorage.getItem('user'));
+                if (currentUserForReport && currentUserForReport.id === ad.userId) {
+                    const reportBtn = document.getElementById('open-report-modal');
+                    if (reportBtn) reportBtn.classList.add('hidden');
+                }
+
+                // Update Details Section
+                if (document.getElementById('detail-category')) document.getElementById('detail-category').textContent = ad.category || '-';
+                if (document.getElementById('detail-city')) document.getElementById('detail-city').textContent = ad.city || '-';
+
+                const toggleField = (id, value, displayValue) => {
+                    const el = document.getElementById(`detail-${id}`);
+                    const container = document.getElementById(`item-${id}`);
+                    if (!el || !container) return; // Skip if elements are missing
+
+                    if (value !== undefined && value !== null && value !== '' && value !== 0 || (id === 'kilometers' && value === 0)) {
+                        el.textContent = displayValue || value;
+                        container.classList.remove('hidden');
+                        container.style.display = 'flex';
+                    } else {
+                        container.classList.add('hidden');
+                        container.style.display = 'none';
+                    }
+                };
+
+                const isProperty = ad.category && ad.category.toLowerCase() === 'property';
+                const isMotors = ad.category && ad.category.toLowerCase() === 'motors';
+
+                // Helper to translate values like "Ready", "Yes", etc.
+                const lang = window.currentLang || localStorage.getItem('lang') || 'en';
+                const dict = (window.translations && window.translations[lang]) || {};
+
+                const translateVal = (val) => {
+                    if (!val) return val;
+                    const mapping = {
+                        'Ready': 'ready',
+                        'Resale': 'resale',
+                        'Off-plan': 'offPlan',
+                        'Yes': 'yes',
+                        'No': 'no'
+                    };
+                    const key = mapping[val] || val.toLowerCase();
+                    return dict[key] || val;
+                };
+
+                toggleField('bedrooms', isProperty ? ad.bedrooms : null);
+                toggleField('bathrooms', isProperty ? ad.bathrooms : null);
+                toggleField('property-type', isProperty ? ad.propertyType : null);
+                toggleField('area', isProperty ? ad.area : null, ad.area ? `${ad.area.toLocaleString()} Sq Ft` : '');
+                toggleField('completion-status', isProperty ? translateVal(ad.completionStatus) : null);
+                toggleField('furnished', isProperty ? translateVal(ad.furnished) : null);
+                toggleField('payment-method', ad.paymentMethod);
+
+                // Render Amenities
+                const amenitiesSection = document.getElementById('amenities-section');
+                const amenitiesList = document.getElementById('amenities-list');
+                if (isProperty && ad.amenities && Array.isArray(ad.amenities) && ad.amenities.length > 0) {
+                    amenitiesSection.classList.remove('hidden');
+                    amenitiesList.innerHTML = ad.amenities.map(item => {
+                        const amenityMapping = {
+                            'Security': 'security',
+                            'Covered Parking': 'coveredParking',
+                            'Private Garden': 'privateGarden',
+                            'Maids Room': 'maidsRoom',
+                            'Elevator': 'elevator',
+                            'Pool': 'pool'
+                        };
+                        const key = amenityMapping[item] || item.toLowerCase();
+                        const translatedName = dict[key] || item;
+                        return `
+                            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium border dark:border-gray-600">
+                                ${translatedName}
+                            </span>
+                        `;
+                    }).join('');
+                } else {
+                    if (amenitiesSection) amenitiesSection.classList.add('hidden');
+                }
+
+                // Show/Hide Year (only for Motors)
+                if (isMotors && ad.year && ad.year !== '0' && ad.year !== 0) {
+                    if (document.getElementById('detail-year')) document.getElementById('detail-year').textContent = ad.year;
+                    if (document.getElementById('item-year')) document.getElementById('item-year').style.display = 'flex';
+                } else {
+                    if (document.getElementById('item-year')) document.getElementById('item-year').style.display = 'none';
+                }
+
+                // Show/Hide Kilometers (only for Motors)
+                if (isMotors && ad.kilometers !== undefined && ad.kilometers !== null && ad.kilometers !== '') {
+                    if (document.getElementById('detail-kilometers')) document.getElementById('detail-kilometers').textContent = ad.kilometers.toLocaleString();
+                    if (document.getElementById('item-kilometers')) document.getElementById('item-kilometers').style.display = 'flex';
+                } else {
+                    if (document.getElementById('item-kilometers')) document.getElementById('item-kilometers').style.display = 'none';
+                }
+
+                // Show/Hide Condition
+                if (ad.itemCondition) {
+                    const trans = translations[window.currentLang || 'en'] || {};
+                    // Match database value (e.g. "Certified Pre-owned") to key (e.g. "CertifiedPreowned")
+                    const conditionKey = ad.itemCondition.toLowerCase().replace(/\s/g, '');
+                    // Try exact key first, then normalized key, then fallback to original
+                    const translatedVal = trans[ad.itemCondition] || trans[conditionKey] || ad.itemCondition;
+                    document.getElementById('detail-condition').textContent = translatedVal;
+                    if (document.getElementById('item-condition')) document.getElementById('item-condition').style.display = 'flex';
+                } else {
+                    if (document.getElementById('item-condition')) document.getElementById('item-condition').style.display = 'none';
+                }
+
+                // Breadcrumb Category translation
+                const breadcrumbCat = document.querySelector('[data-translate="motors"]');
+                if (breadcrumbCat && ad.category) {
+                    breadcrumbCat.textContent = ad.category;
+                    breadcrumbCat.setAttribute('data-translate', ad.category.toLowerCase());
+                }
+
+                // Load Initial Image
+                if (currentImages.length > 0) {
+                    renderGallery();
+                }
+
+                // Update Seller Info
+                if (ad.user) {
+                    try {
+                        const avatarContainer = document.getElementById('seller-avatar');
+                        const nameContainer = document.getElementById('seller-name');
+                        const joinedContainer = document.getElementById('seller-joined');
+
+                        // Show Avatar or Initials
+                        if (avatarContainer) {
+                            const hasAvatar = ad.user.avatar &&
+                                typeof ad.user.avatar === 'string' &&
+                                !ad.user.avatar.includes('gravatar.com/avatar/00000000000000000000000000000000');
+
+                            if (hasAvatar) {
+                                avatarContainer.innerHTML = `<img src="${ad.user.avatar}" class="w-full h-full rounded-full object-cover">`;
+                                avatarContainer.classList.remove('bg-gray-300', 'flex', 'items-center', 'justify-center', 'text-xl', 'font-bold', 'text-gray-600');
+                            } else {
+                                const initials = ad.user.name ? ad.user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '??';
+                                avatarContainer.innerHTML = `<span class="flex items-center justify-center w-full h-full">${initials}</span>`;
+                            }
+                        }
+
+                        if (nameContainer) {
+                            nameContainer.innerHTML = `<span>${ad.user.name || 'Anonymous'}</span>` + (ad.user.isEmailVerified ? `
+                                <svg class="w-4 h-4 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20" title="Verified Seller">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            ` : '');
+                        }
+
+                        // Join Date
+                        if (ad.user.createdAt && joinedContainer) {
+                            const joinDate = new Date(ad.user.createdAt);
+                            const year = joinDate.getFullYear();
+                            joinedContainer.innerHTML = `<span data-translate="memberSince">Member since</span> ${year}`;
+                        }
+
+                        // Profile Links
+                        const profileUrl = `seller-profile.html?id=${ad.userId || (ad.user ? ad.user.id : '')}`;
+                        const pLink = document.getElementById('view-seller-profile');
+                        const aLink = document.getElementById('seller-avatar-link');
+                        const nLink = document.getElementById('seller-name-link');
+
+                        if (pLink) pLink.href = profileUrl;
+                        if (aLink) aLink.href = profileUrl;
+                        if (nLink) nLink.href = profileUrl;
+
+                    } catch (sellerErr) {
+                        console.error('Error updating seller info UI:', sellerErr);
+                        const nameContainer = document.getElementById('seller-name');
+                        if (nameContainer) nameContainer.textContent = ad.user.name || 'Seller';
+                    }
+                }
+
+                // Update dynamic content (currencies, locations) after details are loaded
+                if (window.updateDynamicContent) {
+                    window.updateDynamicContent(window.selectedCountry, window.currentLang);
+                }
+
+                // Chat and Call Button Listeners
+                const chatBtn = document.getElementById('chat-seller-btn');
+                const callBtn = document.getElementById('call-seller-btn');
+
+                if (chatBtn) {
+                    chatBtn.addEventListener('click', async () => {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                            await customAlert('Please login to chat with the seller');
+                            window.location.href = 'login.html';
+                            return;
+                        }
+
+                        try {
+                            chatBtn.disabled = true;
+                            chatBtn.textContent = 'Starting chat...';
+                            const response = await apiClient.startConversation(id);
+                            if (response.success) {
+                                window.location.href = `messages.html?conversationId=${response.data.id}`;
+                            }
+                        } catch (err) {
+                            await customAlert(err.message);
+                            chatBtn.disabled = false;
+                            chatBtn.textContent = 'Send Message';
+                        }
+                    });
+                }
+
+                if (callBtn) {
+                    callBtn.addEventListener('click', async () => {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                            await customAlert(window.currentLang === 'ar' ? 'يرجى تسجيل الدخول لعرض رقم الهاتف' : 'Please login to see the phone number');
+                            window.location.href = 'login.html';
+                            return;
+                        }
+
+                        // Use per-ad phone if set, fallback to user profile phone
+                        const phoneUser = { ...ad.user, phone: ad.phone || (ad.user && ad.user.phone) };
+                        showPhoneModal(phoneUser);
+                    });
+                }
+
+                // Load Reviews
+                loadSellerReviews(ad.userId);
+
+                // Show review form if not the owner
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                if (currentUser && currentUser.id !== ad.userId) {
+                    document.getElementById('review-form-container').classList.remove('hidden');
+
+                    document.getElementById('review-form').onsubmit = async (e) => {
+                        e.preventDefault();
+                        const rating = document.querySelector('input[name="rating"]:checked')?.value;
+                        const comment = document.getElementById('review-comment').value;
+
+                        if (!rating) {
+                            await customAlert('Please select a rating');
+                            return;
+                        }
+
+                        try {
+                            const submitBtn = e.target.querySelector('button[type="submit"]');
+                            submitBtn.disabled = true;
+                            submitBtn.textContent = 'Submitting...';
+
+                            await apiClient.createReview({
+                                sellerId: ad.userId,
+                                adId: ad.id,
+                                rating: parseInt(rating),
+                                comment
+                            });
+
+                            await customAlert('Review submitted successfully!');
+                            document.getElementById('review-comment').value = '';
+                            document.querySelectorAll('input[name="rating"]').forEach(r => r.checked = false);
+                            loadSellerReviews(ad.userId);
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Submit Review';
+                        } catch (err) {
+                            await customAlert(err.message);
+                            const submitBtn = e.target.querySelector('button[type="submit"]');
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'Submit Review';
+                        }
+                    };
+                }
+
+            } catch (err) {
+                console.error('Error loading ad:', err);
+            }
+        }
+
+        async function loadSellerReviews(sellerId) {
+            try {
+                const response = await apiClient.getSellerReviews(sellerId);
+                const reviews = response.data;
+                const container = document.getElementById('reviews-list');
+
+                if (reviews.length === 0) {
+                    container.innerHTML = '<div class="text-center py-10 text-gray-500">No reviews yet for this seller. Be the first to rate!</div>';
+                    document.getElementById('seller-avg-rating').textContent = '0.0';
+                    document.getElementById('seller-total-reviews').textContent = '(0 reviews)';
+                    return;
+                }
+
+                // Average calculation
+                const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+                const avg = (total / reviews.length).toFixed(1);
+                document.getElementById('seller-avg-rating').textContent = avg;
+                document.getElementById('seller-total-reviews').textContent = `(${reviews.length} reviews)`;
+
+                container.innerHTML = '';
+                reviews.forEach(review => {
+                    const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                    const date = new Date(review.createdAt).toLocaleDateString();
+                    const reviewerName = review.reviewer ? review.reviewer.name : 'Anonymous';
+                    const avatar = (review.reviewer && review.reviewer.avatar) ? review.reviewer.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(reviewerName)}`;
+
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="border-b dark:border-gray-700 pb-6 last:border-0">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <img src="${avatar}" class="w-8 h-8 rounded-full object-cover">
+                                    <div>
+                                        <div class="font-bold text-gray-900 dark:text-white text-sm">${reviewerName}</div>
+                                        <div class="text-xs text-gray-500">${date}</div>
+                                    </div>
+                                </div>
+                                <div class="text-accent font-bold">${stars}</div>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm italic">${review.comment || 'No comment provided.'}</p>
+                        </div>
+                    `);
+                });
+
+            } catch (err) {
+                console.error('Error loading reviews:', err);
+            }
+        }
+
+        function renderGallery() {
+            const mainImg = document.getElementById('mainImage');
+            const thumbContainer = document.getElementById('thumb-container');
+
+            mainImg.src = currentImages[currentIndex];
+
+            thumbContainer.innerHTML = '';
+            currentImages.forEach((img, idx) => {
+                const isActive = idx === currentIndex;
+                const thumb = document.createElement('img');
+                thumb.src = img;
+                thumb.className = `gallery-thumb rounded-lg ${isActive ? 'active' : ''}`;
+                thumb.onclick = () => jumpToImage(idx);
+                thumbContainer.appendChild(thumb);
+            });
+        }
+
+        function jumpToImage(idx) {
+            const mainImg = document.getElementById('mainImage');
+            currentIndex = idx;
+
+            // Subtle Fade effect
+            mainImg.style.opacity = '0';
+            setTimeout(() => {
+                renderGallery();
+                mainImg.style.opacity = '1';
+            }, 200);
+        }
+
+        function nextImage() {
+            if (currentImages.length === 0) return;
+            currentIndex = (currentIndex + 1) % currentImages.length;
+            jumpToImage(currentIndex);
+        }
+
+        function prevImage() {
+            if (currentImages.length === 0) return;
+            currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+            jumpToImage(currentIndex);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAdDetails);
+    </script>
+
+    <!-- Phone Modal -->
+    <div id="phone-modal" class="fixed inset-0 z-[200] hidden items-center justify-center">
+        <!-- Backdrop -->
+        <div id="phone-modal-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModal()">
+        </div>
+
+        <!-- Modal Box -->
+        <div
+            class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4 text-center animate-fade-in">
+            <button onclick="closeModal()"
+                class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors z-10"
+                type="button">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <!-- Seller Avatar -->
+            <div id="modal-avatar"
+                class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center text-2xl font-bold text-accent mx-auto mb-3">
+                ?</div>
+            <p id="modal-seller-name" class="font-bold text-gray-900 dark:text-white text-lg mb-1">Seller</p>
+            <p class="text-xs text-gray-400 mb-6" data-translate="verifiedSeller">Verified Seller</p>
+
+            <!-- Phone Number Display -->
+            <div id="phone-number-box" class="hidden">
+                <div
+                    class="flex items-center justify-center gap-3 bg-gray-100 dark:bg-gray-700 rounded-xl px-5 py-4 mb-5">
+                    <svg class="w-5 h-5 text-accent flex-shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                        </path>
+                    </svg>
+                    <span id="modal-phone-number"
+                        class="text-xl font-bold text-gray-900 dark:text-white tracking-widest"></span>
+                    <button id="copy-phone-btn" onclick="copyPhone()"
+                        class="text-gray-400 hover:text-accent transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex gap-3">
+                    <a id="call-link" href="#"
+                        class="flex-1 flex items-center justify-center gap-2 bg-accent text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                            </path>
+                        </svg>
+                        <span data-translate="call">Call</span>
+                    </a>
+                    <a id="whatsapp-link" href="#" target="_blank"
+                        class="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                            <path
+                                d="M12 0C5.373 0 0 5.373 0 12c0 2.021.5 3.925 1.381 5.594L0 24l6.545-1.354A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.014-1.376l-.36-.214-3.732.772.795-3.647-.234-.375A9.818 9.818 0 1112 21.818z" />
+                        </svg>
+                        WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- No Phone Fallback -->
+            <div id="no-phone-box" class="hidden">
+                <div
+                    class="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636">
+                        </path>
+                    </svg>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 mb-4" data-translate="noPhone">No phone number registered.
+                </p>
+                <button onclick="closeModal()"
+                    class="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-3 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                    data-translate="close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let _currentPhoneNumber = null;
+
+        function showPhoneModal(user) {
+            const modal = document.getElementById('phone-modal');
+            const phoneBox = document.getElementById('phone-number-box');
+            const noPhoneBox = document.getElementById('no-phone-box');
+            const avatarEl = document.getElementById('modal-avatar');
+            const nameEl = document.getElementById('modal-seller-name');
+
+            // Set seller info
+            if (user) {
+                const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+                avatarEl.textContent = initials;
+                nameEl.textContent = user.name || 'Seller';
+            }
+
+            if (user && user.phone) {
+                _currentPhoneNumber = user.phone;
+                document.getElementById('modal-phone-number').textContent = user.phone;
+                document.getElementById('call-link').href = `tel:${user.phone}`;
+
+                // Clean phone for WhatsApp (remove spaces, dashes, +)
+                const cleanPhone = user.phone.replace(/[\s\-\(\)]/g, '');
+                document.getElementById('whatsapp-link').href = `https://wa.me/${cleanPhone}`;
+
+                phoneBox.classList.remove('hidden');
+                noPhoneBox.classList.add('hidden');
+            } else {
+                _currentPhoneNumber = null;
+                phoneBox.classList.add('hidden');
+                noPhoneBox.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePhoneModal() {
+            const modal = document.getElementById('phone-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function copyPhone() {
+            if (!_currentPhoneNumber) return;
+            navigator.clipboard.writeText(_currentPhoneNumber).then(() => {
+                const btn = document.getElementById('copy-phone-btn');
+                btn.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                setTimeout(() => {
+                    btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+                }, 2000);
+            }).catch(async () => {
+                await customAlert(_currentPhoneNumber);
+            });
+        }
+
+        // Report Modal Logic
+        async function openReportModal() {
+            if (!localStorage.getItem('token')) {
+                await customAlert('Please login to report this ad');
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('report-modal').classList.remove('hidden');
+            document.getElementById('report-modal').classList.add('flex');
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+            document.getElementById('report-modal').classList.remove('flex');
+        }
+
+        document.getElementById('open-report-modal').onclick = openReportModal;
+
+        document.getElementById('report-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const urlParams = new URLSearchParams(window.location.search);
+            const adId = urlParams.get('id');
+            const reason = document.getElementById('report-reason').value;
+            const description = document.getElementById('report-details').value;
+
+            try {
+                const res = await apiClient.fetch('/reports', {
+                    method: 'POST',
+                    body: JSON.stringify({ adId, reason, description })
+                });
+                if (res.success) {
+                    await customAlert('Thank you. Your report has been submitted and will be reviewed.');
+                    closeReportModal();
+                }
+            } catch (err) {
+                await customAlert(err.message);
+            }
+        };
+
+        // Close modal on Escape key
+
+        function updateMetaTags(ad) {
+            const description = ad.description.substring(0, 160);
+            const title = `${ad.title} - Tagger`;
+            const image = ad.images && ad.images.length > 0 ? ad.images[0] : 'assets/img/og-placeholder.png';
+
+            // Standard meta tags
+            const metaDescription = document.querySelector('meta[name="description"]');
+            if (metaDescription) metaDescription.setAttribute('content', description);
+
+            // OG tags
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.setAttribute('content', title);
+
+            const ogDescription = document.querySelector('meta[property="og:description"]');
+            if (ogDescription) ogDescription.setAttribute('content', description);
+
+            const ogImage = document.querySelector('meta[property="og:image"]');
+            if (ogImage) ogImage.setAttribute('content', image);
+
+            const ogUrl = document.querySelector('meta[property="og:url"]');
+            if (ogUrl) ogUrl.setAttribute('content', window.location.href);
+        }
+
+        // --- Review & Comments Logic ---
+        let selectedRating = 0;
+        const reviewForm = document.getElementById('ad-review-form');
+        const showReviewBtn = document.getElementById('show-review-form-btn');
+        const formContainer = document.getElementById('review-form-container');
+        const cancelReviewBtn = document.getElementById('cancel-review-btn');
+
+        if (showReviewBtn) {
+            showReviewBtn.onclick = async () => {
+                if (!localStorage.getItem('token')) {
+                    await customAlert('Please login to rate this seller');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                formContainer.classList.remove('hidden');
+                showReviewBtn.classList.add('hidden');
+            };
+        }
+
+        if (cancelReviewBtn) {
+            cancelReviewBtn.onclick = () => {
+                formContainer.classList.add('hidden');
+                showReviewBtn.classList.remove('hidden');
+                reviewForm.reset();
+                selectedRating = 0;
+                updateStars();
+            };
+        }
+
+        // Star Rating selector
+        const starBtns = document.querySelectorAll('#star-input button');
+        starBtns.forEach(btn => {
+            btn.onclick = () => {
+                selectedRating = parseInt(btn.dataset.rating);
+                updateStars();
+            };
+        });
+
+        function updateStars() {
+            starBtns.forEach((btn, i) => {
+                btn.textContent = (i < selectedRating) ? '★' : '☆';
+                if (i < selectedRating) btn.classList.add('text-accent');
+                else btn.classList.remove('text-accent');
+            });
+        }
+
+        if (reviewForm) {
+            reviewForm.onsubmit = async (e) => {
+                e.preventDefault();
+                if (selectedRating === 0) { await customAlert('Please select a rating'); return; }
+
+                const comment = document.getElementById('review-comment').value;
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Submitting...';
+
+                    const res = await apiClient.createReview({
+                        sellerId: adData.userId,
+                        adId: adId,
+                        rating: selectedRating,
+                        comment: comment
+                    });
+
+                    if (res.success) {
+                        await customAlert('Your review has been submitted!');
+                        cancelReviewBtn.click();
+                        loadAdReviews(); // Reload list
+                    }
+                } catch (err) {
+                    await customAlert(err.message);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Review';
+                }
+            };
+        }
+
+        async function loadAdReviews() {
+            const list = document.getElementById('ad-reviews-list');
+            try {
+                const res = await apiClient.getSellerReviews(adData.userId, adId);
+                const reviews = res.data;
+                const countEl = document.getElementById('reviews-count');
+                if (countEl) countEl.textContent = `(${reviews.length} reviews)`;
+
+                if (reviews.length === 0) {
+                    list.innerHTML = `<div class="text-center py-10 text-gray-400">No reviews yet for this ad. Be the first!</div>`;
+                    return;
+                }
+
+                list.innerHTML = reviews.map(r => `
+                    <div class="border-b dark:border-gray-700 pb-6 last:border-0">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold dark:text-white">
+                                ${r.reviewer ? r.reviewer.name[0].toUpperCase() : '?'}
+                            </div>
+                            <div>
+                                <div class="font-bold dark:text-white text-sm">${r.reviewer ? r.reviewer.name : 'Unknown User'}</div>
+                                <div class="text-accent text-[10px] tracking-widest">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                            </div>
+                            <div class="ml-auto text-[10px] text-gray-400">${new Date(r.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">${r.comment}</p>
+                    </div>
+                `).join('');
+
+                // Update Avg stars in header
+                const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+                const avgStars = document.getElementById('avg-stars');
+                if (avgStars) {
+                    avgStars.innerHTML = '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
+                }
+            } catch (err) {
+                console.error('Failed to load reviews:', err);
+            }
+        }
+
+        // Call load reviews when ad data is available
+        const originalLoadDetails = window.loadAdDetails;
+        // The original logic is inside DOMContentLoaded, we need to ensure loadAdReviews is called after adData is ready.
+        // I will add it inside the existing fetch success block manually since window.loadAdDetails was not globally exposed.
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePhoneModal();
+                closeReportModal();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

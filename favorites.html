@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites - Tagger</title>
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                        success: '#00C853',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Apply theme immediately to prevent flashing
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body class="bg-secondary dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight"
+                data-translate="myFavorites">My Favorites</h1>
+            <span id="favorites-count"
+                class="bg-accent/10 text-accent px-4 py-1 rounded-full text-sm font-bold hidden">0 items</span>
+        </div>
+
+        <!-- Favorites Container -->
+        <div id="favorites-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Loading Skeleton -->
+            <div class="animate-pulse bg-white dark:bg-gray-800 rounded-xl h-80"></div>
+            <div class="animate-pulse bg-white dark:bg-gray-800 rounded-xl h-80"></div>
+            <div class="animate-pulse bg-white dark:bg-gray-800 rounded-xl h-80"></div>
+            <div class="animate-pulse bg-white dark:bg-gray-800 rounded-xl h-80"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('favorites-container');
+            const countBadge = document.getElementById('favorites-count');
+            const lang = window.currentLang || 'en';
+
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                // Fetch user favorites
+                const response = await apiClient.getFavorites();
+                const ads = response.data || [];
+
+                // Clear container
+                container.innerHTML = '';
+
+                if (ads.length === 0) {
+                    const msg = (window.translations?.[lang]?.noFavoritesSaved) || "You haven't saved any ads yet.";
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-24 bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 shadow-sm animate-fade-in">
+                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 mb-6 text-gray-400">
+                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2" data-translate="noFavoritesSaved">${msg}</h3>
+                            <a href="search.html" class="text-accent font-bold hover:underline" data-translate="exploreAds">Explore Ads</a>
+                        </div>
+                    `;
+                    countBadge.classList.add('hidden');
+                    return;
+                }
+
+                // Update count badge
+                countBadge.textContent = `${ads.length} ${lang === 'ar' ? 'إعلان' : 'items'}`;
+                countBadge.classList.remove('hidden');
+
+                // Sync global userFavorites array for header logic
+                window.userFavorites = ads.map(ad => String(ad.id));
+
+                ads.forEach(ad => {
+                    const isFav = true; // They are in the favorites list
+                    const locationHTML = window.formatAdLocation ? window.formatAdLocation(ad.city, ad.country, 'city-label') : ad.city;
+
+                    const card = `
+                        <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1 flex flex-col group animate-fade-in relative">
+                            <!-- Main Clickable Area -->
+                            <div class="cursor-pointer flex flex-col h-full" onclick="window.location.href='ad-details.html?id=${ad.id}'">
+                                <div class="h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden flex-shrink-0">
+                                    <img src="${ad.images[0] || 'https://placehold.co/400x300?text=No+Image'}" 
+                                         class="w-full h-full object-cover transition duration-500 group-hover:scale-110" 
+                                         alt="${ad.title}">
+                                    ${ad.isFeatured ? '<div class="absolute top-3 left-3 bg-accent text-white text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-wider">Featured</div>' : ''}
+                                </div>
+                                
+                                <div class="p-5 flex flex-col justify-between flex-grow">
+                                    <div class="mb-4">
+                                        <h3 class="font-bold text-gray-900 dark:text-gray-100 group-hover:text-accent transition line-clamp-1 mb-1">${ad.title}</h3>
+                                        <div class="text-xl font-black text-accent">${ad.price.toLocaleString()} <span class="text-xs font-bold currency-label">${window.getCurrencySymbol ? window.getCurrencySymbol() : 'AED'}</span></div>
+                                    </div>
+                                    
+                                    <div class="flex items-center text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                        <svg class="w-3.5 h-3.5 mr-1.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        </svg>
+                                        ${locationHTML}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Favorite Button (Outside the main link div) -->
+                            <button class="absolute top-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-lg text-red-500 hover:scale-110 transition z-[30] rtl:left-2 rtl:right-auto" 
+                                    onclick="window.toggleFav(event, ${ad.id}, this)">
+                                <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', card);
+                });
+
+                // Update dynamic content (currencies, locations)
+                if (window.updateDynamicContent) {
+                    window.updateDynamicContent(window.selectedCountry, window.currentLang);
+                }
+
+            } catch (err) {
+                console.error('Error loading favorites:', err);
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <p class="text-red-500 font-bold">Failed to load favorites. Please try again later.</p>
+                        <button onclick="window.location.reload()" class="mt-4 bg-primary text-white px-6 py-2 rounded-lg">Retry</button>
+                    </div>
+                `;
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>

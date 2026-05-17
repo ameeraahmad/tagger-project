@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tagger for Business - Enterprise Solutions</title>
+    <meta name="description"
+        content="The most powerful advertising tools for car showrooms, real estate agencies, and professional sellers on Tagger.">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        accent: '#FF6B00',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="min-h-screen pt-32 pb-20 bg-primary text-white relative overflow-hidden flex items-center">
+            <div
+                class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')] bg-cover bg-center mix-blend-overlay opacity-20">
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="space-y-8 animate-slide-up">
+                        <span
+                            class="inline-block px-4 py-1 bg-accent/20 border border-accent text-accent rounded-full text-sm font-bold tracking-widest uppercase"
+                            data-translate="forBusiness">FOR BUSINESS</span>
+                        <h1 class="text-5xl md:text-7xl font-bold leading-tight" data-translate="businessTitle">Grow
+                            Your Business with Tagger</h1>
+                        <p class="text-xl text-gray-300 max-w-lg" data-translate="businessSubtitle">The most powerful
+                            advertising tools for car showrooms, real estate agencies, and professional sellers.</p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="plans.html"
+                                class="bg-accent text-white px-8 py-4 rounded-full font-bold text-center hover:bg-orange-600 transition shadow-xl transform hover:-translate-y-1"
+                                data-translate="startTrial">Start Your Free Trial</a>
+                            <a href="contact.html"
+                                class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-center hover:bg-white/20 transition"
+                                data-translate="contactSales">Contact Sales</a>
+                        </div>
+                    </div>
+                    <div class="hidden lg:block animate-float">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                                alt="Dashboard" class="rounded-2xl shadow-2xl border border-white/10">
+                            <div class="absolute -bottom-10 -left-10 glass-card p-6 rounded-2xl animate-pulse">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400">Monthly Leads</p>
+                                        <p class="text-2xl font-bold">+1,240%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="py-12 bg-white dark:bg-gray-800 border-b dark:border-gray-700">
+            <div
+                class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-primary dark:text-white">
+                <div>
+                    <p class="text-4xl font-extrabold mb-1">2M+</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm" data-translate="monthlyUsers">Monthly Users</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-extrabold mb-1">50K+</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm" data-translate="verifiedBusinesses">Verified
+                        Businesses</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-extrabold mb-1">200K+</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm" data-translate="dailyListings">Daily Listings
+                    </p>
+                </div>
+                <div>
+                    <p class="text-4xl font-extrabold mb-1">15+</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm" data-translate="countries">Countries</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-20">
+                    <h2 class="text-4xl font-bold mb-4" data-translate="whyChooseUs">Why Choose Tagger for Business?
+                    </h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-center">
+                    <div class="space-y-4">
+                        <div
+                            class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform hover:rotate-6 transition">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold" data-translate="reachMillions">Reach Millions</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm" data-translate="reachMillionsDesc">Connect
+                            with a massive audience of active buyers searching for what you offer.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div
+                            class="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform hover:rotate-6 transition">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold" data-translate="verifiedStatus">Verified Status</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm" data-translate="verifiedStatusDesc">Build
+                            instant trust with a 'Verified Seller' badge that stands out.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div
+                            class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform hover:rotate-6 transition">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold" data-translate="advancedAnalytics">Advanced Analytics</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm" data-translate="advancedAnalyticsDesc">Track
+                            your performance with detailed insights on views, leads, and clicks.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div
+                            class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform hover:rotate-6 transition">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-width="2"
+                                    d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold" data-translate="dedicatedSupport">Dedicated Support</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm" data-translate="dedicatedSupportDesc">Get
+                            24/7 priority assistance from our experts to maximize your results.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-24 bg-gray-50 dark:bg-gray-800/30">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <div class="bg-primary rounded-3xl p-12 text-white shadow-2xl relative overflow-hidden group">
+                    <div
+                        class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent">
+                    </div>
+                    <h2 class="text-4xl font-bold mb-6" data-translate="ctaTitleBusiness">Ready to scale your leads?
+                    </h2>
+                    <p class="text-gray-300 mb-10 text-lg" data-translate="ctaSubtitleBusiness">Join thousands of
+                        successful businesses on Tagger today.</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="plans.html"
+                            class="bg-accent text-white px-10 py-4 rounded-full font-bold hover:bg-orange-600 transition shadow-lg transform hover:scale-105"
+                            data-translate="getStarted">Get
+                            Started Now</a>
+                        <a href="contact.html"
+                            class="bg-white/10 border border-white/20 px-10 py-4 rounded-full font-bold hover:bg-white/20 transition"
+                            data-translate="learnMore">Learn
+                            More</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+
+</html>

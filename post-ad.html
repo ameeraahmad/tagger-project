@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post An Ad - Tagger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                        success: '#00C853',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link href="assets/css/style.css" rel="stylesheet">
+
+    <!-- Leaflet Maps CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY_HERE"></script>
+</head>
+
+<body class="bg-secondary dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <div class="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8" data-translate="postAdTitle">Post an Ad</h1>
+
+        <form class="bg-white p-8 rounded-xl shadow-lg space-y-6">
+
+            <!-- Category Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                    data-translate="categoryLabel">Category</label>
+                <div class="flex gap-2">
+                    <select id="ad-category"
+                        class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm">
+                        <option value="" disabled selected data-translate="selectCategory">Select Category</option>
+                        <option value="Motors" data-translate="motorsTitle">Motors</option>
+                        <option value="Property" data-translate="propertyTitle">Property</option>
+                        <option value="Electronics" data-translate="electronicsCategoryTitle">Electronics</option>
+                        <option value="Classifieds" data-translate="classifiedsTitle">Classifieds</option>
+                        <option value="Jobs" data-translate="jobsTitle">Jobs</option>
+                        <option value="Services" data-translate="servicesTitle">Services</option>
+                    </select>
+                    <div id="sub-category-badge"
+                        class="hidden items-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-2 rounded-md font-bold text-sm whitespace-nowrap">
+                        <!-- Subcategory text here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ad Details -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="adTitleLabel">Ad
+                    Title</label>
+                <input type="text" id="ad-title" required
+                    class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                    placeholder="e.g. iPhone 14 Pro Max for Sale" data-translate="adTitlePlaceholder">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="priceLabel">Price
+                    (<span class="currency-label">AED</span>)</label>
+                <input type="number" id="ad-price" required
+                    class="block w-1/2 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                    placeholder="e.g. 3500" data-translate="pricePlaceholder">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                    data-translate="descriptionLabel">Description</label>
+                <textarea id="ad-description" rows="5" required
+                    class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                    placeholder="Describe your item..." data-translate="descriptionPlaceholder"></textarea>
+            </div>
+
+            <!-- Motor Details (Conditional) -->
+            <div id="motor-details" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        data-translate="year">Year</label>
+                    <input type="number" id="ad-year"
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                        placeholder="e.g. 2024">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        data-translate="kilometers">Kilometers</label>
+                    <input type="number" id="ad-kilometers"
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                        placeholder="e.g. 15000">
+                </div>
+            </div>
+
+            <!-- Property Details (Conditional) -->
+            <div id="property-details" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        data-translate="bedRooms">Bedrooms</label>
+                    <input type="number" id="ad-bedrooms"
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                        placeholder="e.g. 3">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        data-translate="bathRooms">Bathrooms</label>
+                    <input type="number" id="ad-bathrooms"
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                        placeholder="e.g. 2">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        data-translate="areaLabel">Area (Sq. Ft)</label>
+                    <input type="number" id="ad-area-size"
+                        class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                        placeholder="1500">
+                </div>
+
+                <!-- Completion Status -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-translate="completionStatus">Completion status*</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="completion-status" value="Ready" class="peer hidden" checked>
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="ready">Ready</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="completion-status" value="Resale" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="resale">Resale</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="completion-status" value="Off-plan" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="offPlan">Off-plan</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Furnished -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-translate="furnished">Furnished*</label>
+                    <div class="flex gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="furnished" value="Yes" class="peer hidden">
+                            <span class="px-6 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="yes">Yes</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="furnished" value="No" class="peer hidden" checked>
+                            <span class="px-6 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="no">No</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Amenities -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-translate="amenities">Amenities*</label>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="amenities" value="Security" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="security">Security</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="amenities" value="Covered Parking" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="coveredParking">Covered Parking</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="amenities" value="Private Garden" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="privateGarden">Private Garden</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="amenities" value="Maids Room" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="maidsRoom">Maids Room</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="amenities" value="Elevator" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="elevator">Elevator</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="amenities" value="Pool" class="peer hidden">
+                            <span class="px-4 py-2 border rounded-full text-sm font-medium border-gray-300 peer-checked:border-accent peer-checked:bg-orange-50 peer-checked:text-accent transition block" data-translate="pool">Pool</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="condition-details">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    data-translate="condition">Condition</label>
+                <select id="ad-condition"
+                    class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm">
+                    <option value="New" selected data-translate="new">New</option>
+                    <option value="Used" data-translate="used">Used</option>
+                    <option value="Certified Pre-owned" data-translate="certifiedpreowned">Certified Pre-owned</option>
+                </select>
+            </div>
+
+            <!-- Payment Method (Conditional: Motors & Property) -->
+            <div id="payment-method-details" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-translate="paymentMethod">Payment Method</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <label id="pay-cash-label" class="flex items-center gap-3 p-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:border-accent transition has-[:checked]:border-accent has-[:checked]:bg-orange-50 dark:has-[:checked]:bg-orange-900/20">
+                        <input type="radio" name="payment-method" id="pay-cash" value="Cash" class="accent-accent w-4 h-4" checked>
+                        <div>
+                            <span class="block font-semibold text-sm text-gray-800 dark:text-gray-100" data-translate="paymentCash">Cash</span>
+                        </div>
+                    </label>
+                    <label id="pay-installment-label" class="flex items-center gap-3 p-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:border-accent transition has-[:checked]:border-accent has-[:checked]:bg-orange-50 dark:has-[:checked]:bg-orange-900/20">
+                        <input type="radio" name="payment-method" id="pay-installment" value="Installment" class="accent-accent w-4 h-4">
+                        <div>
+                            <span class="block font-semibold text-sm text-gray-800 dark:text-gray-100" data-translate="paymentInstallment">Installment</span>
+                        </div>
+                    </label>
+                    <label id="pay-both-label" class="flex items-center gap-3 p-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl cursor-pointer hover:border-accent transition has-[:checked]:border-accent has-[:checked]:bg-orange-50 dark:has-[:checked]:bg-orange-900/20">
+                        <input type="radio" name="payment-method" id="pay-both" value="Cash or Installment" class="accent-accent w-4 h-4">
+                        <div>
+                            <span class="block font-semibold text-sm text-gray-800 dark:text-gray-100" data-translate="paymentBoth">Cash or Installment</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="photosLabel">Photos</label>
+                <div id="drop-zone"
+                    class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-accent transition cursor-pointer bg-gray-50">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
+                            viewBox="0 0 48 48" aria-hidden="true">
+                            <path
+                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="file-upload"
+                                class="relative cursor-pointer bg-white rounded-md font-medium text-accent hover:text-orange-500 focus-within:outline-none">
+                                <span data-translate="uploadFile">Upload a file</span>
+                                <input id="file-upload" name="images" type="file" class="sr-only" multiple
+                                    accept="image/*">
+                            </label>
+                            <p class="pl-1" data-translate="dragDrop">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500" data-translate="uploadLimits">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                </div>
+                <div id="preview-container" class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+            </div>
+
+            <!-- Location -->
+            <label class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 block"
+                data-translate="locationGovernorateCity">Location (Governorate/City)</label>
+            <div id="location-select-container" class="relative flex gap-2">
+                <div class="relative flex-grow">
+                    <input type="text" id="location-search-input" placeholder="Search City/Governorate..." required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-accent focus:border-accent dark:bg-gray-700 dark:text-white transition"
+                        autocomplete="off">
+                    <div id="location-results"
+                        class="absolute z-50 w-full left-0 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                    </div>
+                </div>
+                <button type="button" id="open-map-btn"
+                    class="bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-3 rounded-lg hover:bg-accent hover:text-white transition"
+                    title="Pick on Map">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+                <select id="post-ad-location" name="city" class="hidden" required data-dynamic-location="true"
+                    data-include-all="false">
+                    <option value="" disabled selected>Select Governorate</option>
+                    <!-- Locations are dynamically added here from main.js -->
+                </select>
+            </div>
+            <!-- Precise GPS Fields (Hidden) -->
+            <input type="hidden" id="ad-latitude" name="latitude">
+            <input type="hidden" id="ad-longitude" name="longitude">
+            <div id="map-feedback" class="mt-2 text-xs font-bold text-green-600 hidden flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                Precise location selected on map
+            </div>
+
+            <!-- Contact Phone -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="phoneLabel">Contact Phone
+                    Number</label>
+                <div class="flex gap-2">
+                    <select id="ad-country-code"
+                        class="w-1/3 bg-gray-50 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm">
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+20">🇪🇬 +20</option>
+                        <option value="+966">🇸🇦 +966</option>
+                        <option value="+974">🇶🇦 +974</option>
+                    </select>
+                    <input type="tel" id="ad-phone" required
+                        class="flex-1 bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-accent focus:border-accent sm:text-sm"
+                        placeholder="-- --- ----">
+                </div>
+                <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span data-translate="phoneInfoRequired">This number will be shown to buyers and is required.</span>
+                </p>
+            </div>
+
+            <div
+                class="flex justify-end gap-4 mt-12 bg-gray-50 dark:bg-gray-800/50 p-6 rounded-b-2xl border-t dark:border-gray-700">
+                <button type="button"
+                    class="px-8 py-3 rounded-xl border border-gray-300 dark:border-gray-600 font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    onclick="history.back()" data-translate="cancel">Cancel</button>
+                <button type="submit"
+                    class="px-10 py-3 rounded-xl bg-accent text-white font-bold hover:bg-orange-600 shadow-lg shadow-accent/20 transition transform hover:-translate-y-0.5 active:translate-y-0"
+                    data-translate="postNow">Post My Ad</button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Map Modal -->
+    <div id="map-modal"
+        class="fixed inset-0 z-[10000] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate-fade-in">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="font-bold text-lg dark:text-white">Pin Precise Location</h3>
+                <button type="button" id="close-map-modal" class="text-gray-500 hover:text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div id="map-container" class="h-[450px] w-full bg-gray-100"></div>
+            <div
+                class="p-4 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <p class="text-xs text-gray-500 max-w-md">Click anywhere on the map to set the exact location of your
+                    ad. This helps buyers find you more easily.</p>
+                <button type="button" id="confirm-map-loc"
+                    class="w-full sm:w-auto px-8 py-2 bg-accent text-white font-bold rounded-lg hover:bg-orange-600 transition">Confirm
+                    Location</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth
+            if (!localStorage.getItem('token')) {
+                const confirmed = await customAlert('Please login to post an ad.');
+                if (confirmed) window.location.href = 'login.html';
+                return;
+            }
+
+            const form = document.querySelector('form');
+            const fileInput = document.getElementById('file-upload');
+            const previewContainer = document.getElementById('preview-container');
+            const categorySelect = document.getElementById('ad-category');
+            const motorDetails = document.getElementById('motor-details');
+            const propertyDetails = document.getElementById('property-details');
+            const conditionDetails = document.getElementById('condition-details');
+            const paymentMethodDetails = document.getElementById('payment-method-details');
+
+            // Handle Category Change (Show/Hide Relevant Fields)
+            const toggleAdditionalFields = () => {
+                const category = categorySelect.value;
+
+                // Reset all first
+                motorDetails.classList.add('hidden');
+                propertyDetails.classList.add('hidden');
+                conditionDetails.classList.add('hidden');
+                paymentMethodDetails.classList.add('hidden');
+
+                if (category === 'Motors') {
+                    motorDetails.classList.remove('hidden');
+                    conditionDetails.classList.remove('hidden');
+                    paymentMethodDetails.classList.remove('hidden');
+                } else if (category === 'Property') {
+                    propertyDetails.classList.remove('hidden');
+                    paymentMethodDetails.classList.remove('hidden');
+                } else if (category === 'Electronics' || category === 'Classifieds') {
+                    conditionDetails.classList.remove('hidden');
+                    paymentMethodDetails.classList.remove('hidden');
+                } else if (category === 'Jobs' || category === 'Services') {
+                    // No extra details for now
+                }
+
+                // Clear hidden field values to prevent stale data submission
+                if (motorDetails.classList.contains('hidden')) {
+                    document.getElementById('ad-year').value = '';
+                    document.getElementById('ad-kilometers').value = '';
+                }
+                if (propertyDetails.classList.contains('hidden')) {
+                    document.getElementById('ad-bedrooms').value = '';
+                    document.getElementById('ad-bathrooms').value = '';
+                    document.getElementById('ad-area-size').value = '';
+                    // Reset Radio/Checkboxes
+                    document.querySelector('input[name="completion-status"][value="Ready"]').checked = true;
+                    document.querySelector('input[name="furnished"][value="No"]').checked = true;
+                    document.querySelectorAll('input[name="amenities"]').forEach(cb => cb.checked = false);
+                }
+            };
+
+            // Extract from URL if present
+            const params = new URLSearchParams(window.location.search);
+            const initialCategory = params.get('category');
+            let activeSubCategory = params.get('subcategory');
+
+            if (initialCategory) {
+                const optionExists = Array.from(categorySelect.options).some(opt => opt.value === initialCategory);
+                if (optionExists) {
+                    categorySelect.value = initialCategory;
+                    // Disable the select to prevent confusion as subcategory is fixed
+                    categorySelect.disabled = true;
+                    categorySelect.classList.add('bg-gray-100', 'cursor-not-allowed');
+                }
+            }
+
+            const subCategoryBadge = document.getElementById('sub-category-badge');
+            if (activeSubCategory) {
+                subCategoryBadge.textContent = activeSubCategory;
+                subCategoryBadge.classList.remove('hidden');
+                subCategoryBadge.classList.add('flex');
+            }
+
+            categorySelect.addEventListener('change', () => {
+                const urlCat = (new URLSearchParams(window.location.search)).get('category');
+                if (categorySelect.value !== urlCat) {
+                    // Reset subcategory if user manually switches main category
+                    activeSubCategory = '';
+                    subCategoryBadge.classList.add('hidden');
+                    subCategoryBadge.classList.remove('flex');
+                } else {
+                    activeSubCategory = (new URLSearchParams(window.location.search)).get('subcategory');
+                    if (activeSubCategory) {
+                        subCategoryBadge.textContent = activeSubCategory;
+                        subCategoryBadge.classList.remove('hidden');
+                        subCategoryBadge.classList.add('flex');
+                    }
+                }
+                toggleAdditionalFields();
+            });
+            toggleAdditionalFields(); // Initialize on load
+
+            // Handle Image Management
+            let selectedFiles = [];
+
+            const renderPreviews = () => {
+                previewContainer.innerHTML = '';
+                selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const previewHtml = `
+                            <div class="relative group h-24 bg-gray-100 rounded-md overflow-hidden border">
+                                <img src="${e.target.result}" class="w-full h-full object-cover">
+                                <button type="button" onclick="removeFile(${index})" 
+                                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition shadow-md hover:bg-red-600">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                        previewContainer.insertAdjacentHTML('beforeend', previewHtml);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            window.removeFile = (index) => {
+                selectedFiles.splice(index, 1);
+                renderPreviews();
+            };
+
+            fileInput.addEventListener('change', () => {
+                const files = Array.from(fileInput.files);
+                // Prevent duplicate files or exceeding limits if you want, but for now just add
+                selectedFiles = [...selectedFiles, ...files];
+                renderPreviews();
+                // Reset input value so same file can be chose again if deleted
+                fileInput.value = '';
+            });
+
+            // --- Searchable Location Logic ---
+            const locSearchInput = document.getElementById('location-search-input');
+            const locResultsDiv = document.getElementById('location-results');
+            const hiddenSelect = document.getElementById('post-ad-location');
+
+            const updateLocationResults = (filter = '') => {
+                const options = Array.from(hiddenSelect.options);
+                locResultsDiv.innerHTML = '';
+
+                const filtered = options.filter(opt =>
+                    opt.textContent.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                if (filtered.length > 0) {
+                    filtered.forEach(opt => {
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2 hover:bg-accent hover:text-white cursor-pointer text-sm transition';
+                        div.textContent = opt.textContent;
+                        div.onclick = () => {
+                            locSearchInput.value = opt.textContent;
+                            hiddenSelect.value = opt.value;
+                            locResultsDiv.classList.add('hidden');
+                        };
+                        locResultsDiv.appendChild(div);
+                    });
+                    locResultsDiv.classList.remove('hidden');
+                } else if (filter.trim().length > 2) {
+                    // Show "Use custom location"
+                    const div = document.createElement('div');
+                    const lang = window.currentLang || 'en';
+                    const label = (translations[lang] && translations[lang].useCustomLocation) || 'Use as location';
+
+                    div.className = 'px-4 py-3 hover:bg-gray-100 cursor-pointer text-sm transition border-t dark:border-gray-700';
+                    div.innerHTML = `<span class="text-accent font-bold">${label}:</span> <span class="italic">"${filter}"</span>`;
+                    div.onclick = () => {
+                        // Add temporary option to hidden select so it can be "selected"
+                        const newOpt = document.createElement('option');
+                        newOpt.value = filter;
+                        newOpt.textContent = filter;
+                        newOpt.selected = true;
+                        hiddenSelect.appendChild(newOpt);
+                        hiddenSelect.value = filter;
+
+                        locSearchInput.value = filter;
+                        locResultsDiv.classList.add('hidden');
+                    };
+                    locResultsDiv.appendChild(div);
+                    locResultsDiv.classList.remove('hidden');
+                } else {
+                    locResultsDiv.classList.add('hidden');
+                }
+            };
+
+            locSearchInput.addEventListener('focus', () => updateLocationResults(locSearchInput.value));
+            locSearchInput.addEventListener('input', () => updateLocationResults(locSearchInput.value));
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('location-select-container').contains(e.target)) {
+                    locResultsDiv.classList.add('hidden');
+                }
+            });
+
+            // --- MAP LOGIC ---
+            let map, marker;
+            const mapModal = document.getElementById('map-modal');
+            const openMapBtn = document.getElementById('open-map-btn');
+            const closeMapBtn = document.getElementById('close-map-modal');
+            const confirmMapBtn = document.getElementById('confirm-map-loc');
+            const latInput = document.getElementById('ad-latitude');
+            const lngInput = document.getElementById('ad-longitude');
+
+            const initMap = () => {
+                if (map) return;
+
+                // Country Coordinates Mapping
+                const countryCoords = {
+                    'uae': [24.4539, 54.3773],
+                    'egypt': [26.8206, 30.8025],
+                    'ksa': [23.8859, 45.0792],
+                    'qatar': [25.3548, 51.1839]
+                };
+
+                const currentCountry = window.selectedCountry || localStorage.getItem('selectedCountry') || 'uae';
+                const center = countryCoords[currentCountry] || countryCoords['uae'];
+
+                map = L.map('map-container').setView(center, currentCountry === 'egypt' ? 6 : 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                map.on('click', (e) => {
+                    const { lat, lng } = e.latlng;
+                    if (marker) {
+                        marker.setLatLng(e.latlng);
+                    } else {
+                        marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+                    }
+                    latInput.value = lat;
+                    lngInput.value = lng;
+                });
+            };
+
+            openMapBtn.onclick = () => {
+                mapModal.classList.remove('hidden');
+                setTimeout(() => {
+                    initMap();
+                    map.invalidateSize();
+                }, 100);
+            };
+
+            closeMapBtn.onclick = () => mapModal.classList.add('hidden');
+            confirmMapBtn.onclick = async () => {
+                mapModal.classList.add('hidden');
+                if (latInput.value && lngInput.value) {
+                    // Visual feedback
+                    openMapBtn.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+                    openMapBtn.classList.add('bg-green-500', 'text-white');
+                    document.getElementById('map-feedback').classList.remove('hidden');
+
+                    // Optional: Reverse geocode to suggest city
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latInput.value}&lon=${lngInput.value}`);
+                        const data = await res.json();
+                        if (data.address) {
+                            const city = data.address.city || data.address.state || data.address.governorate;
+                            if (city) {
+                                locSearchInput.value = city;
+                                // Try to match with existing options
+                                updateLocationResults(city);
+                            }
+                        }
+                    } catch (e) { }
+                }
+            };
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Gather all values
+                const category = document.getElementById('ad-category').value;
+                const title = document.getElementById('ad-title').value;
+                const price = document.getElementById('ad-price').value;
+                const description = document.getElementById('ad-description').value;
+                const city = document.getElementById('post-ad-location').value;
+                const phone = document.getElementById('ad-phone').value;
+
+                // Optional/Dynamic fields
+                const year = document.getElementById('ad-year')?.value || '';
+                const kilometers = document.getElementById('ad-kilometers')?.value || '';
+                const condition = document.getElementById('ad-condition')?.value || '';
+                const bedrooms = document.getElementById('ad-bedrooms')?.value || '';
+                const bathrooms = document.getElementById('ad-bathrooms')?.value || '';
+                const areaSize = document.getElementById('ad-area-size')?.value || '';
+
+                const phoneCode = document.getElementById('ad-country-code').value;
+                const phoneInput = document.getElementById('ad-phone');
+                let phoneVal = phoneInput.value.replace(/\s+/g, '');
+
+                const phoneConfig = {
+                    '+971': { pattern: /^[2-9]\d{8}$/, length: 9, placeholder: '5x xxx xxxx' },
+                    '+20': { pattern: /^1[0125]\d{8}$/, length: 10, placeholder: '1x xxxx xxxx' },
+                    '+966': { pattern: /^5\d{8}$/, length: 9, placeholder: '5x xxx xxxx' },
+                    '+974': { pattern: /^[3567]\d{7}$/, length: 8, placeholder: 'xxxx xxxx' }
+                };
+
+                // Strip leading zero if provided
+                if (phoneVal.startsWith('0') && phoneCode !== '+974') {
+                    phoneVal = phoneVal.substring(1);
+                }
+
+                const config = phoneConfig[phoneCode];
+                if (config) {
+                    if (phoneVal.length !== config.length || !config.pattern.test(phoneVal)) {
+                        const lang = window.currentLang || 'en';
+                        const errorMsg = (translations[lang] && translations[lang].invalidPhone) || 'Invalid phone number for this country.';
+                        await customAlert(errorMsg);
+                        phoneInput.focus();
+                        return;
+                    }
+                }
+
+                if (!category || !title || !price || !description || !city) {
+                    await customAlert('Please fill in all required fields (Title, Category, Price, Description, & Location).');
+                    if (!city) document.getElementById('location-search-input').focus();
+                    return;
+                }
+
+                // Category specific validation
+                if (category === 'Motors') {
+                    if (!year || !kilometers) {
+                        await customAlert('Please provide both Year and Kilometers for the vehicle.');
+                        return;
+                    }
+                } else if (category === 'Property') {
+                    if (!bedrooms || !bathrooms || !areaSize) {
+                        await customAlert('Please provide Bedrooms, Bathrooms, and Area size for the property.');
+                        return;
+                    }
+                }
+
+                if (!phoneVal) {
+                    await customAlert('Please provide a contact phone number.');
+                    return;
+                }
+
+                if (!selectedFiles || selectedFiles.length === 0) {
+                    await customAlert('Please upload at least one image for your ad.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('price', price);
+                formData.append('category', category);
+
+                if (activeSubCategory) {
+                    formData.append('subCategory', activeSubCategory);
+                }
+
+                formData.append('city', city);
+                formData.append('phone', phoneCode + ' ' + phoneVal);
+                formData.append('year', year);
+                formData.append('kilometers', kilometers);
+                formData.append('itemCondition', condition);
+                formData.append('bedrooms', bedrooms);
+                formData.append('bathrooms', bathrooms);
+                formData.append('area', areaSize);
+
+                if (category === 'Property') {
+                    const completionStatus = document.querySelector('input[name="completion-status"]:checked')?.value || '';
+                    const furnished = document.querySelector('input[name="furnished"]:checked')?.value || '';
+                    const amenities = Array.from(document.querySelectorAll('input[name="amenities"]:checked')).map(cb => cb.value);
+                    
+                    formData.append('completionStatus', completionStatus);
+                    formData.append('furnished', furnished);
+                    formData.append('amenities', JSON.stringify(amenities));
+                }
+
+                const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value || '';
+                if (paymentMethod) formData.append('paymentMethod', paymentMethod);
+                formData.append('country', window.selectedCountry || 'uae');
+
+                // Add coordinates
+                if (latInput.value) formData.append('latitude', latInput.value);
+                if (lngInput.value) formData.append('longitude', lngInput.value);
+
+                // Add images from selectedFiles array
+                if (selectedFiles && selectedFiles.length > 0) {
+                    selectedFiles.forEach(file => formData.append('images', file));
+                }
+
+                try {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Posting...';
+
+                    await apiClient.createAd(formData);
+                    const confirmed = await customAlert('Ad posted successfully!');
+                    if (confirmed) window.location.href = 'index.html';
+                } catch (err) {
+                    await customAlert(err.message);
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Post Now';
+                }
+            });
+            // Phone Logic
+            const adPhoneCode = document.getElementById('ad-country-code');
+            const adPhoneInput = document.getElementById('ad-phone');
+            const phoneConfigGlobal = {
+                '+971': { placeholder: '5x xxx xxxx' },
+                '+20': { placeholder: '1x xxxx xxxx' },
+                '+966': { placeholder: '5x xxx xxxx' },
+                '+974': { placeholder: 'xxxx xxxx' }
+            };
+
+            const updateAdPhonePlaceholder = () => {
+                const config = phoneConfigGlobal[adPhoneCode.value];
+                if (config) adPhoneInput.placeholder = config.placeholder;
+            };
+
+            adPhoneCode.addEventListener('change', updateAdPhonePlaceholder);
+
+            // Initialize Phone Code
+            const currentCountryAds = localStorage.getItem('selectedCountry') || 'uae';
+            const countryToCode = { 'uae': '+971', 'egypt': '+20', 'saudi': '+966', 'qatar': '+974' };
+            if (countryToCode[currentCountryAds]) {
+                adPhoneCode.value = countryToCode[currentCountryAds];
+                updateAdPhonePlaceholder();
+            }
+        });
+    </script>
+</body>
+
+</html>

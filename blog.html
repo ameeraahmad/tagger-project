@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Tagger | Tips & Guides</title>
+    <meta name="description" content="Read the latest tips, news, and guides for buying and selling on Tagger.">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        accent: '#FF6B00',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <main>
+        <!-- Blog Hero -->
+        <section class="bg-primary text-white py-20 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <svg class="w-full h-full" fill="currentColor" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0 0 L100 100 L100 0 Z"></path>
+                </svg>
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6" data-translate="blog">Blog</h1>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto" data-translate="blogSubtitle">Tips, news, and guides
+                    for savvy buyers and sellers.</p>
+            </div>
+        </section>
+
+        <!-- Search & Categories Bar -->
+        <section class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div id="blog-filter-btns" class="flex items-center space-x-2 rtl:space-x-reverse overflow-x-auto pb-2 md:pb-0 hide-scrollbar w-full md:w-auto">
+                    <!-- Dynamic Category Buttons will be injected here -->
+                </div>
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="blog-search-input"
+                        class="w-full pl-10 pr-4 py-2 rounded-full border dark:border-gray-700 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-accent transition"
+                        placeholder="Search articles..." data-translate="blogSearchPlaceholder"
+                        oninput="debounceFilter()">
+                    <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Blog Grid -->
+        <section class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-12">
+                    <h2 class="text-3xl font-bold" data-translate="latestArticles">Latest Articles</h2>
+                    <span id="blog-results-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
+                </div>
+
+                <!-- Articles Grid (populated dynamically) -->
+                <div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Empty State -->
+                    <div id="blog-empty-state" class="col-span-full flex flex-col items-center justify-center py-24 text-center">
+                        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-3" data-translate="comingSoon">Coming Soon</h3>
+                        <p class="text-gray-500 dark:text-gray-400 max-w-md" data-translate="blogSubtitle">Tips, news, and guides for savvy buyers and sellers.</p>
+                        <div class="mt-8 flex items-center gap-2 text-accent">
+                            <svg class="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm0 2a8 8 0 100 16A8 8 0 0012 4zm0 3v5l3 3-1.4 1.4L10 13.6V7h2z"/>
+                            </svg>
+                            <span class="text-sm font-medium">Articles launching soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-gray-100 dark:bg-gray-800/50 py-20 transition-colors duration-300">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold mb-4" data-translate="newsletterTitle">Subscribe to our Newsletter</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8" data-translate="newsletterSubtitle">Get the latest tips and
+                    deals delivered straight to your inbox.</p>
+                <form id="newsletter-form" class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                    <input type="email" id="newsletter-email" placeholder="Email address" data-translate="emailPlaceholder"
+                        class="flex-grow px-6 py-4 rounded-full border dark:border-gray-700 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-accent"
+                        required>
+                    <button type="submit" id="newsletter-submit-btn"
+                        class="bg-accent text-white px-8 py-4 rounded-full font-bold hover:bg-orange-600 transition shadow-lg"
+                        data-translate="signUpBtn">Subscribe</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Newsletter subscription handler
+        document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('newsletter-email');
+            const submitBtn = document.getElementById('newsletter-submit-btn');
+            const lang = window.currentLang || 'en';
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            
+            try {
+                const response = await fetch('/api/newsletter/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: emailInput.value,
+                        country: localStorage.getItem('selectedCountry') || 'egypt'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    await customAlert(data.message);
+                    emailInput.value = '';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                await customAlert(err.message || 'Something went wrong. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = window.translations?.[lang]?.signUpBtn || 'Subscribe';
+            }
+        });
+
+        // Central list of categories (matching site main categories)
+        const blogCategories = ['motors', 'property', 'electronics', 'classifieds', 'jobs', 'services'];
+
+        function renderCategoryButtons(activeCat = 'all') {
+            const container = document.getElementById('blog-filter-btns');
+            if (!container) return;
+            
+            const lang = window.currentLang || 'en';
+            const t = window.translations?.[lang] || {};
+
+            // Map internal category keys to translation keys (handle special cases like realestate)
+            const getTranslationKey = (cat) => {
+                if (cat === 'all') return 'allCategories';
+                if (cat === 'realestate') return 'categoryRealEstate';
+                return `category${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+            };
+
+            let html = `
+                <button onclick="filterCategory('all')" data-cat="all"
+                    class="blog-cat-btn ${activeCat === 'all' ? 'active-cat bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-accent hover:text-white'} px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition">
+                    ${t.allCategories || 'All Categories'}
+                </button>
+            `;
+
+            blogCategories.forEach(cat => {
+                const translationKey = `category${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+                const label = t[translationKey] || cat;
+                
+                html += `
+                    <button onclick="filterCategory('${cat}')" data-cat="${cat}"
+                        class="blog-cat-btn ${activeCat === cat ? 'active-cat bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-accent hover:text-white'} px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition">
+                        ${label}
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Blog category filter & search
+        let blogAbortController = null;
+        async function filterCategory(cat = 'all') {
+            const grid = document.getElementById('blog-grid');
+            const count = document.getElementById('blog-results-count');
+            const searchInput = document.getElementById('blog-search-input');
+            const lang = window.currentLang || 'en';
+            const t = window.translations?.[lang] || {};
+
+            if (!grid) return;
+
+            // Show loading state
+            grid.style.opacity = '0.5';
+            
+            // Cancel previous request if any
+            if (blogAbortController) blogAbortController.abort();
+            blogAbortController = new AbortController();
+
+            try {
+                // Ensure buttons are rendered if this is the first call
+                if (!document.querySelector('.blog-cat-btn')) {
+                    renderCategoryButtons(cat);
+                }
+
+                const query = (searchInput?.value || '').trim().toLowerCase();
+                const country = localStorage.getItem('selectedCountry') || 'egypt';
+                const response = await fetch(`/api/blog?category=${cat}&search=${encodeURIComponent(query)}&country=${country}`, {
+                    signal: blogAbortController.signal
+                });
+                
+                const resData = await response.json();
+                grid.style.opacity = '1';
+
+                if (resData.success) {
+                    // Re-render buttons to update active state
+                    renderCategoryButtons(cat);
+
+                    if (count) {
+                        const countText = lang === 'ar' ? `${resData.data.length} مقال` : `${resData.data.length} articles`;
+                        count.textContent = countText;
+                    }
+
+                    if (resData.data.length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-span-full py-20 text-center">
+                                <div class="text-4xl mb-4">🔍</div>
+                                <p class="text-gray-400 font-bold">${window.translations?.[lang]?.noArticlesFound || 'No articles found matching your criteria.'}</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    grid.innerHTML = resData.data.map(post => {
+                        const title = lang === 'ar' ? post.title_ar : post.title_en;
+                        const excerpt = lang === 'ar' ? post.excerpt_ar : post.excerpt_en;
+                        const catKey = `category${post.category.charAt(0).toUpperCase() + post.category.slice(1)}`;
+                        const catLabel = t[catKey] || post.category;
+                        
+                        return `
+                        <article class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="${post.featuredImage}" alt="${title}" 
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <div class="absolute top-4 left-4 bg-accent text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                    ${catLabel}
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-lg font-bold mb-3 line-clamp-2 group-hover:text-accent transition-colors">
+                                    <a href="blog-details.html?slug=${post.slug}">${title}</a>
+                                </h3>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-3">
+                                    ${excerpt}
+                                </p>
+                                <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <span class="text-xs text-gray-400 font-medium">${new Date(post.createdAt).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}</span>
+                                    <a href="blog-details.html?slug=${post.slug}" class="text-accent text-xs font-bold hover:underline">
+                                        ${t.readMore || 'Read More'} →
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                console.error('Error loading posts:', err);
+                grid.style.opacity = '1';
+            }
+        }
+
+        let debounceTimer;
+        function debounceFilter() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const activeCat = document.querySelector('.active-cat')?.dataset.cat || 'all';
+                filterCategory(activeCat);
+            }, 300);
+        }
+
+        function viewPost(slug) {
+            window.location.href = `blog-details.html?slug=${slug}`;
+        }
+
+        // Listen for language or country changes from main.js
+        window.addEventListener('languageChanged', (e) => {
+            console.log('🌐 Blog: Language changed to', e.detail.lang);
+            const activeCat = document.querySelector('.active-cat')?.dataset.cat || 'all';
+            filterCategory(activeCat);
+        });
+
+        window.addEventListener('countryChanged', (e) => {
+            console.log('📍 Blog: Country changed to', e.detail.country);
+            const activeCat = document.querySelector('.active-cat')?.dataset.cat || 'all';
+            filterCategory(activeCat);
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Slight delay to ensure main.js is ready
+            setTimeout(() => {
+                const activeCat = document.querySelector('.active-cat')?.dataset.cat || 'all';
+                filterCategory(activeCat);
+            }, 100);
+        });
+
+    </script>
+</body>
+
+</html>

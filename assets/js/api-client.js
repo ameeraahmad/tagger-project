@@ -1,0 +1,284 @@
+var API_URL = '/api';
+
+var apiClient = {
+    async fetch(endpoint, options = {}) {
+        const token = localStorage.getItem('token');
+        const headers = {
+            ...options.headers,
+        };
+
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        console.log(`📡 API Request: ${options.method || 'GET'} ${API_URL}${endpoint}`);
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers,
+        });
+
+        // Try to parse as JSON, but handle HTML error responses gracefully
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            const data = await response.json();
+            console.log(`✅ API Response [${endpoint}]:`, data);
+            if (!response.ok) {
+                // If password was changed on another device → auto logout here
+                if (data.code === 'PASSWORD_CHANGED') {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    alert(data.message || 'Your password was changed. Please log in again.');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                // Build a rich error so callers can inspect code / accountCountry etc.
+                const err = new Error(data.message || 'Something went wrong');
+                if (data.code)           err.code           = data.code;
+                if (data.accountCountry) err.accountCountry = data.accountCountry;
+                if (data.suggestReset)   err.suggestReset   = true;
+                throw err;
+            }
+            return data;
+        } else {
+            // Handle non-JSON response (likely an HTML error page)
+            const text = await response.text();
+            console.error('Server returned non-JSON response:', text);
+            throw new Error(`Server Error: ${response.status} ${response.statusText}`);
+        }
+    },
+
+    // Auth
+    _syncUserCountry(user) {
+        if (user && user.country) {
+            const flags = { 'uae': '🇦🇪', 'egypt': '🇪🇬', 'ksa': '🇸🇦', 'qatar': '🇶🇦' };
+            const names = { 'uae': 'UAE', 'egypt': 'Egypt', 'ksa': 'KSA', 'qatar': 'Qatar' };
+            
+            localStorage.setItem('selectedCountry', user.country);
+            localStorage.setItem('selectedCountrySource', 'manual'); 
+            localStorage.setItem('selectedCountryFlag', flags[user.country] || '🌍');
+            localStorage.setItem('selectedCountryName', names[user.country] || user.country);
+            
+            // Dispatch event so UI can update immediately
+            window.dispatchEvent(new CustomEvent('countryChanged', { detail: { country: user.country } }));
+        }
+    },
+
+    async login(email, password, captchaToken = null) {
+        const body = { email, password };
+        if (captchaToken) body.captchaToken = captchaToken;
+
+        // Send currently selected country so backend can validate it
+        const selectedCountry = localStorage.getItem('selectedCountry');
+        if (selectedCountry) body.selectedCountry = selectedCountry;
+
+        const data = await this.fetch('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify(body),
+        });
+        
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.data));
+
+        this._syncUserCountry(data.data);
+
+        return data;
+    },
+
+    async googleLogin(tokenId) {
+        const selectedCountry = localStorage.getItem('selectedCountry') || '';
+        const data = await this.fetch('/auth/google', {
+            method: 'POST',
+            body: JSON.stringify({ tokenId, selectedCountry })
+        });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.data));
+        this._syncUserCountry(data.data);
+        return data;
+    },
+
+    async facebookLogin(accessToken) {
+        const selectedCountry = localStorage.getItem('selectedCountry') || '';
+        const data = await this.fetch('/auth/facebook', {
+            method: 'POST',
+            body: JSON.stringify({ accessToken, selectedCountry })
+        });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.data));
+        this._syncUserCountry(data.data);
+        return data;
+    },
+
+    async register(userData) {
+        const data = await this.fetch('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify(userData),
+        });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.data));
+
+        this._syncUserCountry(data.data);
+
+        return data;
+    },
+
+    logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+    },
+
+    // Ads
+    async getAds(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return this.fetch(`/ads?${queryString}`);
+    },
+
+    async getAd(id) {
+        return this.fetch(`/ads/${id}`);
+    },
+
+    async createAd(adData) {
+        return this.fetch('/ads', {
+            method: 'POST',
+            body: adData instanceof FormData ? adData : JSON.stringify(adData),
+        });
+    },
+
+    async updateAd(id, adData) {
+        return this.fetch(`/ads/${id}`, {
+            method: 'PUT',
+            body: adData instanceof FormData ? adData : JSON.stringify(adData),
+        });
+    },
+
+    async updateAdStatus(id, statusData) {
+        return this.fetch(`/ads/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify(statusData),
+        });
+    },
+
+    async deleteAd(id) {
+        return this.fetch(`/ads/${id}`, {
+            method: 'DELETE',
+        });
+    },
+
+    async permanentlyDeleteAd(id) {
+        return this.fetch(`/ads/${id}/permanent`, {
+            method: 'DELETE',
+        });
+    },
+
+    async toggleFavorite(adId) {
+        return this.fetch(`/ads/${adId}/favorite`, {
+            method: 'POST',
+        });
+    },
+
+    async getFavorites() {
+        return this.fetch('/ads/favorites');
+    },
+
+    async getMyAds() {
+        return this.fetch('/ads/my-ads');
+    },
+
+    // Chat
+    async startConversation(adId) {
+        return this.fetch('/chat/conversation', {
+            method: 'POST',
+            body: JSON.stringify({ adId }),
+        });
+    },
+
+    async getConversations() {
+        return this.fetch('/chat/conversations');
+    },
+
+    async sendMessage(conversationId, message, imageFile = null) {
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('conversationId', conversationId);
+            if (message) formData.append('message', message);
+            formData.append('image', imageFile);
+
+            return this.fetch('/chat/message', {
+                method: 'POST',
+                body: formData
+            });
+        }
+
+        return this.fetch('/chat/message', {
+            method: 'POST',
+            body: JSON.stringify({ conversationId, message }),
+        });
+    },
+
+    async getChatMessages(conversationId) {
+        return this.fetch(`/chat/messages/${conversationId}`);
+    },
+
+    async getUnreadCount() {
+        return this.fetch('/chat/unread-count');
+    },
+
+    // Reviews
+    async createReview(reviewData) {
+        return this.fetch('/reviews', {
+            method: 'POST',
+            body: JSON.stringify(reviewData)
+        });
+    },
+
+    async getSellerReviews(sellerId, adId = null) {
+        let url = `/reviews/seller/${sellerId}`;
+        if (adId) url += `?adId=${adId}`;
+        return this.fetch(url);
+    },
+
+    // User Profile
+    async getProfile() {
+        return this.fetch('/users/profile');
+    },
+
+    async getPublicProfile(id) {
+        return this.fetch(`/users/public/${id}`);
+    },
+
+    async getMyPayments() {
+        return this.fetch('/payments/my-payments');
+    },
+
+    async updateProfile(profileData) {
+        return this.fetch('/users/profile', {
+            method: 'PUT',
+            body: profileData instanceof FormData ? profileData : JSON.stringify(profileData)
+        });
+    },
+
+    async updatePassword(passwordData) {
+        return this.fetch('/users/update-password', {
+            method: 'PUT',
+            body: JSON.stringify(passwordData)
+        });
+    },
+
+    // Unified Image Upload
+    async uploadImage(file, folder = 'general') {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('folder', folder);
+
+        return this.fetch('/admin/upload', {
+            method: 'POST',
+            body: formData
+        });
+    }
+};
+
+window.apiClient = apiClient;

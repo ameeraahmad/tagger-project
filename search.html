@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Tagger</title>
+    <meta name="description" content="Search for cars, properties, and more on Tagger.">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                        success: '#00C853',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Apply theme immediately to prevent flashing
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body class="bg-secondary dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row gap-8">
+
+            <!-- Filters Sidebar -->
+            <div class="w-full md:w-64 flex-shrink-0">
+                <div
+                    class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm sticky top-24 border dark:border-gray-700 transition-colors duration-300">
+                    <h2 class="font-bold text-lg mb-4 text-gray-900 dark:text-white" data-translate="filters">Filters
+                    </h2>
+
+                    <!-- Categories -->
+                    <div class="mb-6">
+                        <h3 class="text-xs font-bold text-gray-400 dark:text-gray-500 mb-3 uppercase tracking-wider"
+                            data-translate="categoryLabel">Category</h3>
+                        <div class="space-y-2 max-h-48 overflow-y-auto pr-2 hide-scrollbar">
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value=""
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent" checked>
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="allCategories">All Categories</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value="Motors"
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent">
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="motorsTitle">Motors</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value="Property"
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent">
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="propertyTitle">Property</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value="Electronics"
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent">
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="electronicsCategoryTitle">Electronics</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value="Classifieds"
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent">
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="classifiedsTitle">Classifieds</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value="Jobs"
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent">
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="jobsTitle">Jobs</span>
+                            </label>
+                            <label class="flex items-center group cursor-pointer">
+                                <input type="radio" name="category" value="Services"
+                                    class="w-4 h-4 text-accent border-gray-300 focus:ring-accent">
+                                <span
+                                    class="ml-2 text-sm text-gray-600 dark:text-gray-300 group-hover:text-accent transition"
+                                    data-translate="servicesTitle">Services</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase"
+                            data-translate="priceLabel">Price
+                            (<span class="currency-label">AED</span>)</h3>
+                        <div class="flex space-x-2 rtl:space-x-reverse">
+                            <input type="number" placeholder="Min" data-translate="minPrice"
+                                class="w-1/2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm focus:outline-none focus:border-accent">
+                            <input type="number" placeholder="Max" data-translate="maxPrice"
+                                class="w-1/2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm focus:outline-none focus:border-accent">
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase"
+                            data-translate="locationLabel">
+                            Location</h3>
+                        <select id="filter-location" data-dynamic-location="true" data-include-all="true"
+                            class="block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm focus:outline-none focus:border-accent">
+                            <option value="" data-translate="allUAE">All UAE</option>
+                            <option value="dubai" data-translate="dubai">Dubai</option>
+                            <option value="abuDhabi" data-translate="abuDhabi">Abu Dhabi</option>
+                        </select>
+                    </div>
+
+                    <!-- Advanced Filters (Conditional) -->
+                    <div id="advanced-filters" class="border-t pt-4 mt-4 hidden">
+                        <h3 class="text-xs font-bold text-accent mb-3 uppercase tracking-wider" data-translate="advancedFilters">Advanced Filters</h3>
+
+                        <!-- Classifieds (Electronics/Mobiles/etc) -->
+                        <div id="filter-classifieds-group" class="space-y-4 mb-6 hidden">
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-1">CONDITION</label>
+                                <select id="filter-condition" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                    <option value="" data-translate="any">Any</option>
+                                    <option value="New" data-translate="new">New</option>
+                                    <option value="Used" data-translate="used">Used</option>
+                                    <option value="Certified Pre-owned" data-translate="certifiedpreowned">Certified Pre-owned</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Motors -->
+                        <div id="filter-motors-group" class="space-y-4 mb-6 hidden">
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-1" data-translate="year">YEAR</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" id="minYear" data-translate="min" placeholder="Min" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                    <input type="number" id="maxYear" data-translate="max" placeholder="Max" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-1" data-translate="kiloMetrs">KILOMETERS</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" id="minKm" data-translate="min" placeholder="Min" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                    <input type="number" id="maxKm" data-translate="max" placeholder="Max" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property -->
+                        <div id="filter-property-group" class="space-y-4 mb-6 hidden">
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-1" data-translate="type">PROPERTY TYPE</label>
+                                <select id="filter-propertyType" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                    <option value="" data-translate="any">Any</option>
+                                    <option value="Apartment" data-translate="apartment">Apartment</option>
+                                    <option value="Villa" data-translate="villa">Villa</option>
+                                    <option value="Office">Office</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-1" data-translate="bedRooms">BEDROOMS</label>
+                                <select id="filter-bedrooms" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                    <option value="" data-translate="any">Any</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5+</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-400 font-bold block mb-1">AREA (SQ FT)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="number" id="minArea" placeholder="Min" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                    <input type="number" id="maxArea" placeholder="Max" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-2 py-1 text-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        class="w-full bg-primary dark:bg-accent text-white py-2 rounded-md font-bold hover:bg-blue-900 dark:hover:bg-orange-600 transition mb-2"
+                        data-translate="applyFilters">Apply
+                        Filters</button>
+                    <button
+                        class="w-full text-gray-500 dark:text-gray-400 text-sm hover:text-gray-700 dark:hover:text-white"
+                        data-translate="reset">Reset</button>
+
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="flex-grow">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><span
+                            data-translate="searchResults">Search
+                            Results</span> <span id="results-count" class="text-gray-400 dark:text-gray-500 text-lg font-normal mb-1"></span></h1>
+                    <div
+                        class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 rtl:space-x-reverse">
+                        <span data-translate="sortBy">Sort by:</span>
+                        <select id="sort-by" onchange="applyFilters()"
+                            class="border-none bg-transparent font-medium focus:ring-0 cursor-pointer dark:text-white">
+                            <option value="newest" class="dark:bg-gray-800" data-translate="newest" selected>Newest to Oldest</option>
+                            <option value="lowHigh" class="dark:bg-gray-800" data-translate="lowHigh">Price: Low to High</option>
+                            <option value="highLow" class="dark:bg-gray-800" data-translate="highLow">Price: High to Low</option>
+                            <option value="oldest" class="dark:bg-gray-800" data-translate="oldest">Oldest to Newest</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="search-results-container" class="space-y-4">
+                    <!-- Ads will be injected here via JavaScript -->
+                    <div class="flex justify-center py-20">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+                    </div>
+
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-8 flex justify-center">
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px rtl:space-x-reverse"
+                        aria-label="Pagination">
+                        <a href="#"
+                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rtl:rounded-r-md rtl:rounded-l-none"
+                            data-translate="previous">
+                            Previous
+                        </a>
+                        <a href="#" aria-current="page"
+                            class="z-10 bg-indigo-50 dark:bg-gray-700 border-accent text-accent relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            1
+                        </a>
+                        <a href="#"
+                            class="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            2
+                        </a>
+                        <a href="#"
+                            class="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            3
+                        </a>
+                        <a href="#"
+                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rtl:rounded-l-md rtl:rounded-r-none"
+                            data-translate="next">
+                            Next
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    <script>
+        // Use global scope for helper functions
+        window.currentSearchParams = {};
+
+        async function loadSearchResults(params = {}) {
+            try {
+                window.currentSearchParams = params;
+                console.log('🔍 Loading Ads with params:', params);
+                const response = await apiClient.getAds(params);
+                const results = response.data;
+                console.log(`✅ Found ${results.length} results`);
+                const container = document.getElementById('search-results-container');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                const countContainer = document.getElementById('results-count');
+                if (countContainer) {
+                    countContainer.innerHTML = `(${results.length} <span data-translate="ads">ads</span>)`;
+                }
+
+                if (results.length === 0) {
+                    const lang = window.currentLang || 'en';
+                    const noResultsText = (window.translations?.[lang]?.noResultsFound) || 'No results found';
+                    const tryAdjustText = (window.translations?.[lang]?.tryAdjustingYourFiltersOrSearchTerms) || 'Try adjusting your filters or search terms.';
+                    container.innerHTML = `
+                        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white" data-translate="noResultsFound">${noResultsText}</h3>
+                            <p class="mt-1 text-sm text-gray-500" data-translate="tryAdjustingYourFiltersOrSearchTerms">${tryAdjustText}</p>
+                        </div>
+                    `;
+                    document.querySelector('nav[aria-label="Pagination"]')?.parentElement?.classList.add('hidden');
+                    if (window.translatePage) window.translatePage();
+                    return;
+                }
+
+                document.querySelector('nav[aria-label="Pagination"]')?.parentElement?.classList.remove('hidden');
+
+                results.forEach(ad => {
+                    const locationHTML = window.formatAdLocation(ad.city, ad.country, 'city-label');
+                    const isFav = (window.userFavorites || []).includes(String(ad.id));
+                    const adCard = `
+                        <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col sm:flex-row group animate-fade-in relative cursor-pointer" onclick="window.location.href='ad-details.html?id=${ad.id}'">
+                            <div class="h-48 sm:h-auto sm:w-64 bg-gray-200 dark:bg-gray-700 relative overflow-hidden flex-shrink-0">
+                                <img src="${ad.images[0] || 'https://placehold.co/300'}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt="${ad.title}">
+                                ${ad.isFeatured ? `<div class="absolute top-3 left-3 bg-accent text-white text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-wider" data-translate="featuredBadge">${window.translations?.[window.currentLang || 'en']?.featuredBadge || 'Featured'}</div>` : ''}
+                            </div>
+                            <div class="p-6 flex flex-col justify-between flex-grow">
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="font-black text-lg sm:text-xl text-gray-900 dark:text-gray-100 group-hover:text-accent transition line-clamp-1 flex items-center gap-1">
+                                            <span>${ad.title}</span>
+                                            ${ad.user && ad.user.isEmailVerified ? `<svg class="w-4 h-4 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>` : ''}
+                                        </h3>
+                                        <button class="wishlist-btn text-gray-300 hover:text-red-500 transition-colors ${isFav ? 'text-red-500' : ''}" onclick="window.toggleFav(event, ${ad.id}, this)">
+                                            <svg class="w-6 h-6" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div class="text-2xl font-black text-accent mt-1 mb-3">${ad.price.toLocaleString()} <span class="text-sm font-bold currency-label">${window.getCurrencySymbol()}</span></div>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">${ad.description}</p>
+                                </div>
+                                <div class="flex justify-between items-center text-[11px] font-bold text-gray-400 dark:text-gray-500 pt-4 border-t dark:border-gray-700/50 uppercase tracking-wider leading-none">
+                                    <div class="flex items-center space-x-6 rtl:space-x-reverse">
+                                        <span class="flex items-center"><svg class="w-3.5 h-3.5 mr-1.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> ${locationHTML}</span>
+                                        <span class="flex items-center"><svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span>${new Date(ad.createdAt).toLocaleDateString()}</span></span>
+                                    </div>
+                                    <span class="hidden sm:inline-block text-accent group-hover:translate-x-1 transition-transform">Details &rarr;</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', adCard);
+                });
+                renderPagination(response.page, response.totalPages, params);
+                if (window.updateDynamicContent) window.updateDynamicContent(window.selectedCountry, window.currentLang);
+            } catch (err) {
+                console.error('Error loading search results:', err);
+            }
+        }
+
+        function renderPagination(currentPage, totalPages, params) {
+            const nav = document.querySelector('nav[aria-label="Pagination"]');
+            if (!nav) return;
+            nav.innerHTML = '';
+            if (totalPages <= 1) {
+                nav.parentElement.classList.add('hidden');
+                return;
+            }
+            const createPageLink = (page, text, active = false, disabled = false) => {
+                const a = document.createElement('a');
+                a.href = '#';
+                a.className = `relative inline-flex items-center px-4 py-2 border text-sm font-medium ${active ? 'z-10 bg-accent/10 border-accent text-accent' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+                a.textContent = text;
+                if (!disabled && !active) {
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        loadSearchResults({ ...params, page });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    };
+                }
+                return a;
+            };
+            nav.appendChild(createPageLink(currentPage - 1, 'Previous', false, currentPage === 1));
+            for (let i = 1; i <= totalPages; i++) {
+                if (totalPages > 5) {
+                    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { nav.appendChild(createPageLink(i, i, i === currentPage)); }
+                    else if (i === currentPage - 2 || i === currentPage + 2) {
+                        const span = document.createElement('span');
+                        span.className = "relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-400";
+                        span.textContent = "...";
+                        nav.appendChild(span);
+                    }
+                } else { nav.appendChild(createPageLink(i, i, i === currentPage)); }
+            }
+            nav.appendChild(createPageLink(currentPage + 1, 'Next', false, currentPage === totalPages));
+        }
+
+        function toggleAdvancedFilters() {
+            const category = document.querySelector('input[name="category"]:checked')?.value || '';
+            const advanced = document.getElementById('advanced-filters');
+            if (!advanced) return;
+            const groups = {
+                motors: document.getElementById('filter-motors-group'),
+                property: document.getElementById('filter-property-group'),
+                classifieds: document.getElementById('filter-classifieds-group')
+            };
+            advanced.classList.add('hidden');
+            Object.values(groups).forEach(g => g?.classList.add('hidden'));
+
+            if (category === 'Motors') {
+                advanced.classList.remove('hidden');
+                groups.motors?.classList.remove('hidden');
+            } else if (category === 'Property') {
+                advanced.classList.remove('hidden');
+                groups.property?.classList.remove('hidden');
+            } else if (['Electronics', 'Classifieds'].includes(category)) {
+                advanced.classList.remove('hidden');
+                groups.classifieds?.classList.remove('hidden');
+            }
+        }
+
+        function applyFilters() {
+            const getVal = (selector) => document.querySelector(selector)?.value || '';
+            const category = document.querySelector('input[name="category"]:checked')?.value || '';
+            const citySelect = document.getElementById('filter-location');
+            const cityValue = citySelect?.value || '';
+            const searchInput = document.querySelector('.search-input');
+            
+            // Get existing params to preserve GPS data
+            const params = {
+                ...window.currentSearchParams,
+                country: window.selectedCountry || localStorage.getItem('selectedCountry') || 'uae',
+                category,
+                sortBy: document.getElementById('sort-by')?.value || 'newest',
+                search: searchInput?.value || '',
+                minPrice: document.querySelector('input[data-translate="minPrice"]')?.value || '',
+                maxPrice: document.querySelector('input[data-translate="maxPrice"]')?.value || '',
+                city: (cityValue.toLowerCase().includes('all') || cityValue === '') ? (window.currentSearchParams?.city || '') : cityValue,
+                minYear: getVal('#minYear'), maxYear: getVal('#maxYear'),
+                minKm: getVal('#minKm'), maxKm: getVal('#maxKm'),
+                bedrooms: getVal('#filter-bedrooms'),
+                minArea: getVal('#minArea'), maxArea: getVal('#maxArea'),
+                propertyType: getVal('#filter-propertyType'),
+                condition: getVal('#filter-condition')
+            };
+
+            const prevCat = window.currentSearchParams?.category || '';
+            if (prevCat && prevCat !== category) delete params.subCategory;
+
+            // Only clear GPS data if the user EXPLICITLY selected a DIFFERENT city from the dropdown
+            // and that city is not "All" and not empty.
+            const currentCity = window.currentSearchParams?.city || window.initialUrlParams?.get('city') || '';
+            
+            // In Arabic, we must be careful with comparisons.
+            if (cityValue && cityValue !== currentCity && !cityValue.toLowerCase().includes('all')) {
+                console.log('📍 City manually changed from', currentCity, 'to', cityValue, '- clearing GPS');
+                delete params.lat; delete params.lng; delete params.radius; delete params.loc;
+                if (searchInput) searchInput.placeholder = window.translations?.[window.currentLang]?.searchPlaceholder || 'Search...';
+            }
+
+            // Remove empty keys
+            Object.keys(params).forEach(key => (params[key] === undefined || params[key] === '') && delete params[key]);
+            
+            console.log('🔍 Applying Filters:', params);
+            loadSearchResults(params);
+        }
+
+        window.applyFilters = applyFilters;
+        window.toggleAdvancedFilters = toggleAdvancedFilters;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialParams = { country: window.selectedCountry || localStorage.getItem('selectedCountry') || 'uae' };
+            const searchInput = document.querySelector('.search-input');
+
+            // URL Param Sync
+            const q = urlParams.get('search') || urlParams.get('q');
+            if (q) { initialParams.search = q; if (searchInput) searchInput.value = q; }
+            if (urlParams.get('city')) initialParams.city = urlParams.get('city');
+            if (urlParams.get('lat') && urlParams.get('lng')) {
+                initialParams.lat = urlParams.get('lat'); initialParams.lng = urlParams.get('lng');
+                initialParams.radius = urlParams.get('radius') || 50; initialParams.loc = urlParams.get('loc');
+            }
+            if (urlParams.get('category')) {
+                initialParams.category = urlParams.get('category');
+                const radio = document.querySelector(`input[name="category"][value="${initialParams.category}"]`);
+                if (radio) radio.checked = true;
+            }
+            if (urlParams.get('subcategory')) initialParams.subCategory = urlParams.get('subcategory');
+
+            loadSearchResults(initialParams);
+
+            const syncLocationUi = () => {
+                const citySelect = document.getElementById('filter-location');
+                if (citySelect && window.currentSearchParams?.city) citySelect.value = window.currentSearchParams.city;
+            };
+            
+            // Robust initialization check
+            window.isInitialLoad = true;
+            window.initialUrlParams = new URLSearchParams(window.location.search);
+            
+            window.addEventListener('languageChanged', () => {
+                if (window.syncLocationUi) window.syncLocationUi();
+            });
+            
+            // Sync UI then unlock filters
+            setTimeout(() => {
+                if (window.syncLocationUi) window.syncLocationUi();
+                window.isInitialLoad = false;
+                console.log('✅ Search UI stabilized.');
+            }, 2000); // 2 seconds to be safe
+
+            // Reactive Filters
+            window.addEventListener('countryChanged', () => {
+                if (window.isInitialLoad) return;
+                applyFilters();
+            });
+
+            document.querySelectorAll('input[name="category"]').forEach(r => {
+                r.addEventListener('change', () => { 
+                    if (window.isInitialLoad) return;
+                    toggleAdvancedFilters(); 
+                    applyFilters(); 
+                });
+            });
+
+            document.getElementById('filter-location')?.addEventListener('change', () => {
+                if (window.isInitialLoad) return;
+                applyFilters();
+            });
+
+            const applyBtn = document.querySelector('button[data-translate="applyFilters"]');
+            if (applyBtn) applyBtn.addEventListener('click', applyFilters);
+
+            const resetBtn = document.querySelector('button[data-translate="reset"]');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    document.querySelector('input[name="category"][value=""]').checked = true;
+                    document.querySelectorAll('input[type="number"]').forEach(i => i.value = '');
+                    document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+                    if (searchInput) searchInput.value = '';
+                    toggleAdvancedFilters(); loadSearchResults({});
+                });
+            }
+
+            const headerSearchBtn = document.querySelector('.search-wrapper button');
+            if (headerSearchBtn) headerSearchBtn.addEventListener('click', applyFilters);
+            if (searchInput) searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyFilters(); });
+            
+            toggleAdvancedFilters();
+        });
+    </script>
+</body>
+
+</html>

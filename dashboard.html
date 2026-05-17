@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - Tagger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                        success: '#00C853',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body
+    class="bg-gray-100 dark:bg-gray-900 font-sans leading-normal tracking-normal text-gray-800 dark:text-gray-100 transition-colors duration-300">
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+
+    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <div class="flex flex-col md:flex-row gap-8">
+
+            <!-- Sidebar -->
+            <div class="w-full md:w-64 flex-shrink-0">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border dark:border-gray-700">
+                    <div class="p-6 bg-primary text-white text-center">
+                        <div id="user-avatar-container"
+                            class="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-primary mb-3 shadow-inner overflow-hidden">
+                            --</div>
+                        <h2 id="user-display-name" class="font-bold text-lg">Loading...</h2>
+                        <p class="text-sm text-blue-200">
+                            <span data-translate="memberSince">Member since</span>
+                            <span id="user-member-since">...</span>
+                        </p>
+                    </div>
+                    <nav class="p-4 space-y-1">
+                        <a href="#" onclick="showSection('ads')" id="nav-ads"
+                            class="sidebar-nav-link flex items-center px-4 py-3 bg-blue-50 text-accent font-medium rounded-lg">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                                </path>
+                            </svg>
+                            <span data-translate="myDashboard">My Dashboard</span>
+                        </a>
+                        <a href="#" onclick="showSection('analytics')" id="nav-analytics"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2zm0 0V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z">
+                                </path>
+                            </svg>
+                            <span data-translate="analytics">Analytics</span>
+                        </a>
+                        <a href="#" onclick="showSection('payments')" id="nav-payments"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                                </path>
+                            </svg>
+                            <span data-translate="myPayments">My Payments</span>
+                        </a>
+                        <a href="favorites.html"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                                </path>
+                            </svg>
+                            <span data-translate="myFavorites">Favorites</span>
+                        </a>
+                        <a href="messages.html"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                                </path>
+                            </svg>
+                            <span data-translate="messages">Messages</span>
+                            <span
+                                class="unread-badge ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full rtl:mr-auto rtl:ml-0 hidden">0</span>
+                        </a>
+                        <a href="#" onclick="showSection('rejected')" id="nav-rejected"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span data-translate="rejectedAds">Rejected Ads</span>
+                        </a>
+                        <a href="#" onclick="showSection('archive')" id="nav-archive"
+                        <a href="profile.html"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary rounded-lg transition">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span data-translate="settings">Settings</span>
+                        </a>
+                        <a href="#" onclick="apiClient.logout()"
+                            class="sidebar-nav-link flex items-center px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg transition mt-4">
+                            <svg class="w-5 h-5 mr-3 rtl:ml-3 rtl:mr-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            <span data-translate="logout">Logout</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Content -->
+            <div class="flex-grow space-y-6">
+                <!-- Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-accent rtl:border-r-4 rtl:border-l-0">
+                        <div class="text-sm text-gray-500 mb-1" data-translate="activeAds">Active Ads</div>
+                        <div class="text-3xl font-bold text-gray-900">12</div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-primary rtl:border-r-4 rtl:border-l-0">
+                        <div class="text-sm text-gray-500 mb-1" data-translate="totalViews">Total Views</div>
+                        <div class="text-3xl font-bold text-gray-900">1,452</div>
+                    </div>
+                    <div
+                        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500 rtl:border-r-4 rtl:border-l-0">
+                        <div class="text-sm text-gray-500 mb-1" data-translate="messages">Messages</div>
+                        <div class="text-3xl font-bold text-gray-900">8</div>
+                    </div>
+                </div>
+
+                <!-- My Ads Section (Active/Pending) -->
+                <div id="section-ads"
+                    class="dashboard-section bg-white rounded-xl shadow-sm overflow-hidden anim-fade-in border dark:border-gray-700">
+                    <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-900 dark:text-white" data-translate="activeAdsList">Active/Pending Ads</h3>
+                        <a href="select-category.html"
+                            class="text-xs bg-accent text-white px-3 py-1.5 rounded-full font-bold hover:shadow-md transition"
+                            data-translate="postNew">Post New</a>
+                    </div>
+                    <div id="ads-container" class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Rejected Ads Section -->
+                <div id="section-rejected"
+                    class="dashboard-section hidden bg-white rounded-xl shadow-sm overflow-hidden anim-fade-in border dark:border-gray-700">
+                    <div class="px-6 py-4 border-b flex justify-between items-center bg-red-50/50 dark:bg-red-900/10">
+                        <h3 class="font-bold text-gray-900 dark:text-white" data-translate="rejectedAdsList">Rejected Ads</h3>
+                    </div>
+                    <div id="rejected-container" class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Archive Section (Sold/Deleted) -->
+                <div id="section-archive"
+                    class="dashboard-section hidden bg-white rounded-xl shadow-sm overflow-hidden anim-fade-in border dark:border-gray-700">
+                    <div class="px-6 py-4 border-b bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-900 dark:text-white" data-translate="archiveList">Archive (Sold, Deleted)</h3>
+                    </div>
+                    <div id="archive-container" class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- My Payments Section -->
+                <div id="section-payments"
+                    class="dashboard-section hidden bg-white rounded-xl shadow-sm overflow-hidden anim-fade-in border dark:border-gray-700">
+                    <div class="px-6 py-4 border-b bg-gray-50/50 dark:bg-gray-800/50">
+                        <h3 class="font-bold text-gray-900 dark:text-white" data-translate="myPayments">Payment History
+                        </h3>
+                    </div>
+                    <div id="payments-container" class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead
+                                class="bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 uppercase text-[10px] font-bold tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3" data-translate="planPurpose">Plan / Purpose</th>
+                                    <th class="px-6 py-3" data-translate="amount">Amount</th>
+                                    <th class="px-6 py-3" data-translate="date">Date</th>
+                                    <th class="px-6 py-3" data-translate="statusColumn">Status</th>
+                                    <th class="px-6 py-3" data-translate="actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payments-list" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- My Analytics Section -->
+                <div id="section-analytics"
+                    class="dashboard-section hidden bg-white rounded-xl shadow-sm overflow-hidden anim-fade-in border dark:border-gray-700">
+                    <div class="px-6 py-4 border-b bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 dark:text-white" data-translate="analytics">Performance
+                            Analytics</h3>
+                        <span class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded">PRO
+                            FEATURE</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700">
+                                <h4 class="text-sm font-bold text-gray-500 mb-2 uppercase tracking-tight" data-translate="topPerformingAd">Top Performing Ad</h4>
+                                <div id="top-ad-title" class="font-bold text-lg text-primary dark:text-white truncate">-</div>
+                                <div id="top-ad-views" class="text-2xl font-black text-accent mt-1">0 <span class="text-xs" data-translate="viewsSmall">views</span></div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border dark:border-gray-700">
+                                <h4 class="text-sm font-bold text-gray-500 mb-2 uppercase tracking-tight" data-translate="avgViewsPerAd">Average Views per Ad</h4>
+                                <div id="avg-views" class="text-3xl font-black text-primary dark:text-white mt-1">0</div>
+                                <div class="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-widest"><span data-translate="globalAverage">Global average</span>: 12.4</div>
+                            </div>
+                        </div>
+
+                        <div class="relative h-64 w-full">
+                            <canvas id="viewsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(localStorage.getItem('user'));
+            // Update Sidebar Profile
+            try {
+                const response = await apiClient.getProfile();
+                const user = response.data;
+                
+                if (user) {
+                    const avatarContainer = document.getElementById('user-avatar-container');
+                    const nameContainer = document.getElementById('user-display-name');
+                    const joinedContainer = document.getElementById('user-member-since');
+
+                    // 1. Update Profile Image/Avatar
+                    if (avatarContainer) {
+                        if (user.avatar && !user.avatar.includes('gravatar.com/avatar/00000000000000000000000000000000')) {
+                            avatarContainer.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover">`;
+                        } else {
+                            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                            avatarContainer.textContent = initials;
+                        }
+                    }
+
+                    // 2. Update Display Name
+                    if (nameContainer) nameContainer.textContent = user.name;
+
+                    // 3. Update Join Date
+                    if (joinedContainer && user.createdAt) {
+                        joinedContainer.textContent = new Date(user.createdAt).getFullYear();
+                    }
+                }
+            } catch (err) {
+                console.warn('Dashboard profile load error:', err);
+                // Fallback to localStorage if API fails
+                const localUser = JSON.parse(localStorage.getItem('user'));
+                if (localUser) {
+                    document.getElementById('user-display-name').textContent = localUser.name;
+                    const initials = localUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('user-avatar-container').textContent = initials;
+                }
+            }
+
+            // Initial load from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const section = urlParams.get('section');
+            if (section) {
+                console.log('🎯 Deep-linking to section:', section);
+                showSection(section);
+            } else {
+                loadAds();
+            }
+        });
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(s => s.classList.add('hidden'));
+            // Show target section
+            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+
+            // Update sidebar links
+            document.querySelectorAll('.sidebar-nav-link').forEach(link => {
+                link.classList.remove('bg-blue-50', 'text-accent', 'font-medium');
+                link.classList.add('text-gray-600');
+            });
+
+            const activeLink = document.getElementById(`nav-${sectionId}`);
+            if (activeLink) {
+                activeLink.classList.add('bg-blue-50', 'text-accent', 'font-medium');
+                activeLink.classList.remove('text-gray-600');
+            }
+
+            // Load data if needed
+            if (sectionId === 'ads' || sectionId === 'archive' || sectionId === 'rejected') loadAds();
+            if (sectionId === 'payments') loadPayments();
+            if (sectionId === 'analytics') console.log('Analytics section active');
+        }
+
+        async function loadAds() {
+            try {
+                const response = await apiClient.getMyAds();
+                const allAds = response.data;
+
+                // Split ads into Active and Archive with 15-minute delay rule
+                const fifteenMinutes = 15 * 60 * 1000;
+                const now = new Date().getTime();
+
+                const activeAds = allAds.filter(ad => {
+                    const isNewRecentChange = (ad.status === 'sold' || ad.status === 'deleted') && 
+                                             (now - new Date(ad.updatedAt).getTime() < fifteenMinutes);
+                    return ad.status === 'active' || ad.status === 'pending' || isNewRecentChange;
+                });
+
+                const rejectedAds = allAds.filter(ad => ad.status === 'rejected');
+
+                const archiveAds = allAds.filter(ad => {
+                    const isOldChange = (ad.status === 'sold' || ad.status === 'deleted') && 
+                                       (now - new Date(ad.updatedAt).getTime() >= fifteenMinutes);
+                    return isOldChange;
+                });
+
+                // Update Stats (only count active for the counter)
+                const stats = document.querySelectorAll('.text-3xl.font-bold.text-gray-900');
+                if (stats.length >= 2) {
+                    stats[0].textContent = activeAds.length;
+                    const totalViews = allAds.reduce((acc, ad) => acc + (ad.views || 0), 0);
+                    stats[1].textContent = totalViews.toLocaleString();
+                    
+                    // Update Messages Count if possible
+                    try {
+                        const unreadData = await apiClient.getUnreadCount();
+                        if (stats[2]) stats[2].textContent = unreadData.count;
+                    } catch (err) { console.warn('Failed to fetch unread count for dashboard'); }
+                    
+                    // Update Analytics Summary
+                    const avgViews = allAds.length > 0 ? (totalViews / allAds.length).toFixed(1) : 0;
+                    document.getElementById('avg-views').textContent = avgViews;
+                    
+                    const topAd = [...allAds].sort((a, b) => (b.views || 0) - (a.views || 0))[0];
+                    if (topAd) {
+                        document.getElementById('top-ad-title').textContent = topAd.title;
+                        document.getElementById('top-ad-views').innerHTML = `${topAd.views || 0} <span class="text-xs">views</span>`;
+                    }
+                }
+
+                renderAdList(activeAds, 'ads-container', false);
+                renderAdList(rejectedAds, 'rejected-container', false, true); // Use special flag for rejected
+                renderAdList(archiveAds, 'archive-container', true);
+                
+                // Initialize analytics chart if data exists
+                if (allAds.length > 0) {
+                    renderViewsChart(allAds);
+                }
+
+            } catch (err) {
+                console.error('Error loading ads:', err);
+                document.getElementById('ads-container').innerHTML = `<div class="p-12 text-center text-red-500">${err.message}</div>`;
+            }
+        }
+
+        let chartInstance = null;
+        function renderViewsChart(ads) {
+            const ctx = document.getElementById('viewsChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            // Sort by views decending
+            const sortedAds = [...ads].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+            
+            const labels = sortedAds.map(ad => ad.title.length > 20 ? ad.title.substring(0, 17) + '...' : ad.title);
+            const data = sortedAds.map(ad => ad.views || 0);
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#E5E7EB' : '#111827';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Views',
+                        data: data,
+                        backgroundColor: '#FF6B00',
+                        borderRadius: 6,
+                        hoverBackgroundColor: '#e66000'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { weight: 'bold' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAdList(ads, containerId, isArchive, isRejected = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            if (ads.length === 0) {
+                const lang = localStorage.getItem('lang') || 'en';
+                let msg = '';
+                if (isRejected) {
+                    msg = translations[lang]?.noRejectedAds || "No rejected ads.";
+                } else if (isArchive) {
+                    msg = translations[lang]?.noArchivedAds || "No archived ads.";
+                } else {
+                    msg = translations[lang]?.noActiveAds || "You haven't posted any active ads yet.";
+                }
+                container.innerHTML = `<div class="p-12 text-center text-gray-500">${msg}</div>`;
+                if (window.translatePage) window.translatePage();
+                return;
+            }
+
+            ads.forEach(ad => {
+                const statusColor = ad.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                        ad.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                        ad.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                        ad.status === 'sold' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                        'bg-gray-50 text-gray-700 border-gray-200';
+
+                const adItem = `
+                    <div class="p-6 flex items-center hover:bg-gray-50 transition border-b dark:border-gray-700 ${ad.status === 'deleted' ? 'opacity-70 grayscale-[0.5]' : ''}">
+                        <img src="${ad.images[0] || 'https://placehold.co/150'}" class="w-16 h-16 rounded object-cover mr-4 rtl:ml-4 rtl:mr-0">
+                        <div class="flex-grow">
+                            <h4 class="font-bold text-gray-900 dark:text-white mb-1">
+                                <a href="ad-details.html?id=${ad.id}">${ad.title}</a>
+                                ${ad.isFeatured ? '<span class="ml-2 bg-accent text-[9px] text-white px-1.5 py-0.5 rounded uppercase">Featured</span>' : ''}
+                            </h4>
+                            <div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-gray-500">
+                                <span>${ad.category} • <span data-translate="updatedLabel">Updated</span> ${new Date(ad.updatedAt).toLocaleDateString()}</span>
+                                <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> ${ad.views || 0}</span>
+                            </div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full font-bold text-[9px] border uppercase ${statusColor}">
+                                    ${(window.translations?.[localStorage.getItem('lang') || 'en']?.[ad.status]) || ad.status}
+                                </span>
+                                ${ad.status === 'deleted' && !isArchive ? `
+                                    <span class="text-[10px] text-red-600 font-bold animate-pulse" data-translate="archivingSoon">Archiving soon...</span>
+                                ` : ''}
+                                ${ad.status === 'rejected' && ad.rejectionReason ? `
+                                    <div class="mt-1 p-2 bg-red-50 dark:bg-red-900/10 rounded border border-red-100 dark:border-red-900/20 text-[10px] text-red-600 flex items-start gap-1">
+                                        <svg class="w-3 h-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                        <div>
+                                            <span class="font-bold" data-translate="rejectionReasonLabel">Reason: </span>
+                                            <span>${ad.rejectionReason}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                            ${(ad.status === 'deleted' || ad.status === 'sold') && !isArchive ? `
+                                <button onclick="undoStatusChange(${ad.id})" class="text-[10px] bg-primary text-white px-3 py-1.5 rounded-full font-bold transition hover:bg-opacity-90 shadow-sm flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                    <span data-translate="undo">Undo</span>
+                                </button>
+                            ` : ''}
+
+                            ${ad.status === 'active' ? `
+                                <button onclick="markAsSold(${ad.id})" class="text-[10px] bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1.5 rounded font-bold transition" data-translate="markSold">Sold</button>
+                                ${!ad.isFeatured ? `<a href="plans.html?adId=${ad.id}" class="text-[10px] bg-accent/10 hover:bg-accent hover:text-white text-accent px-2.5 py-1.5 rounded font-bold transition" data-translate="promote">Promote</a>` : ''}
+                            ` : ''}
+
+                            ${isArchive ? `
+                                <button onclick="relistAd(${ad.id})" class="text-[10px] bg-green-500 text-white px-2.5 py-1.5 rounded font-bold transition hover:bg-green-600" data-translate="relistBtn">Relist</button>
+                                <button onclick="permanentlyDeleteAd(${ad.id})" class="text-[10px] bg-red-600 text-white px-2.5 py-1.5 rounded font-bold transition hover:bg-red-700 ml-2 rtl:mr-2 rtl:ml-0" data-translate="deleteBtn">Delete</button>
+                            ` : ''}
+
+                            <div class="flex items-center border-l dark:border-gray-700 ml-2 pl-2 rtl:border-r rtl:border-l-0 rtl:mr-2 rtl:pr-2">
+                                <a href="edit-ad.html?id=${ad.id}" class="p-1.5 text-gray-400 hover:text-accent transition" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </a>
+                                ${ad.status !== 'deleted' ? `
+                                <button class="p-1.5 text-gray-400 hover:text-red-500 transition" onclick="deleteAd(${ad.id})" title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', adItem);
+            });
+            if (window.translatePage) window.translatePage();
+        }
+
+        async function relistAd(id) {
+            const lang = localStorage.getItem('lang') || 'en';
+            const msg = translations[lang]?.confirmRelist || 'Relist this ad for approval?';
+            const confirmed = await customConfirm(msg);
+            if (confirmed) {
+                try {
+                    await apiClient.updateAdStatus(id, { status: 'pending' });
+                    window.location.reload();
+                } catch (err) {
+                    await customAlert(err.message);
+                }
+            }
+        }
+
+        async function permanentlyDeleteAd(id) {
+            const lang = localStorage.getItem('lang') || 'en';
+            const msg = translations[lang]?.confirmDeleteAdPermanent || 'Are you absolutely sure you want to permanently delete this ad? This action cannot be undone.';
+            const confirmed = await customConfirm(msg);
+            if (confirmed) {
+                try {
+                    await apiClient.permanentlyDeleteAd(id);
+                    window.location.reload();
+                } catch (err) {
+                    await customAlert(err.message);
+                }
+            }
+        }
+
+        async function loadPayments() {
+            const list = document.getElementById('payments-list');
+            const lang = localStorage.getItem('lang') || 'en';
+            const loadingMsg = translations[lang]?.loadingHistory || 'Loading history...';
+            list.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-gray-400"><svg class="animate-spin h-5 w-5 mx-auto mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${loadingMsg}</td></tr>`;
+
+            try {
+                const res = await apiClient.getMyPayments();
+                const payments = res.data;
+
+                if (payments.length === 0) {
+                    const noPaymentsMsg = translations[lang]?.noPayments || "No payment records found.";
+                    list.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-gray-500">${noPaymentsMsg}</td></tr>`;
+                    return;
+                }
+
+                list.innerHTML = '';
+                payments.forEach(p => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                            <td class="px-6 py-4">
+                                <div class="font-bold text-gray-900 dark:text-white capitalize">${p.plan}</div>
+                                <div class="text-[10px] text-gray-400">ID: ${p.stripePaymentIntentId || 'Pending'}</div>
+                            </td>
+                            <td class="px-6 py-4 font-medium text-gray-700 dark:text-gray-300">
+                                ${p.amount} ${p.currency.toUpperCase()}
+                            </td>
+                            <td class="px-6 py-4 text-gray-500">
+                                ${new Date(p.createdAt).toLocaleDateString()}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${p.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                            p.status === 'failed' ? 'bg-red-50 text-red-700 border-red-200' :
+                                'bg-yellow-50 text-yellow-700 border-yellow-200'
+                        }">
+                                    ${p.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button class="text-accent hover:underline font-bold text-xs" data-translate="receipt">Receipt</button>
+                            </td>
+                        </tr>
+                    `;
+                    list.insertAdjacentHTML('beforeend', row);
+                });
+                if (window.translatePage) window.translatePage();
+            } catch (err) {
+                list.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-red-500">${err.message}</td></tr>`;
+            }
+        }
+
+        async function deleteAd(id) {
+            const lang = localStorage.getItem('lang') || 'en';
+            const msg = translations[lang]?.confirmDeleteAd || 'Are you sure you want to delete this ad?';
+            const confirmed = await customConfirm(msg);
+            if (confirmed) {
+                try {
+                    await apiClient.deleteAd(id);
+                    window.location.reload();
+                } catch (err) {
+                    await customAlert(err.message);
+                }
+            }
+        }
+
+        async function markAsSold(id) {
+            try {
+                await apiClient.updateAdStatus(id, { status: 'sold' });
+                window.location.reload();
+            } catch (err) {
+                await customAlert(err.message);
+            }
+        }
+
+        async function undoStatusChange(id) {
+            try {
+                // Restore status to active without admin check because it's within 15 min
+                await apiClient.updateAdStatus(id, { status: 'active' });
+                window.location.reload();
+            } catch (err) {
+                await customAlert(err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Tagger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 300px);
+            min-height: 500px;
+        }
+
+        .messages-scroll {
+            height: calc(100% - 130px);
+        }
+
+        .conversation-item.active {
+            background-color: rgba(255, 107, 0, 0.1);
+            border-left: 4px solid #FF6B00;
+        }
+
+        .rtl .conversation-item.active {
+            border-left: none;
+            border-right: 4px solid #FF6B00;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 font-sans transition-colors duration-300">
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden chat-container flex flex-col md:flex-row border dark:border-gray-700">
+
+            <!-- Conversations Sidebar -->
+            <div class="w-full md:w-80 border-r dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-800/50">
+                <div
+                    class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-white dark:bg-gray-800">
+                    <h2 class="font-bold text-lg dark:text-white" data-translate="chatTitle">Messages</h2>
+                    <span id="unread-count" class="bg-accent text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                </div>
+                <div id="conversations-list" class="flex-grow overflow-y-auto">
+                    <!-- Conversations will be loaded here -->
+                    <div class="p-8 text-center text-gray-500" data-translate="waitingForMessage">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Chat Window -->
+            <div id="chat-window" class="flex-grow flex flex-col bg-white dark:bg-gray-900">
+                <!-- Select Chat Placeholder -->
+                <div id="no-chat-selected" class="flex-grow flex flex-col items-center justify-center p-8 text-center">
+                    <div
+                        class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold dark:text-white mb-2" data-translate="chatTitle">Messages</h3>
+                    <p class="text-gray-500 max-w-xs" data-translate="selectChat">Select a conversation to start
+                        chatting</p>
+                </div>
+
+                <!-- Active Chat -->
+                <div id="active-chat" class="hidden flex-grow flex flex-col h-full">
+                    <!-- Chat Header -->
+                    <div
+                        class="p-4 border-b dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
+                        <div class="flex items-center">
+                            <div id="chat-with-avatar"
+                                class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white font-bold mr-3 rtl:ml-3 rtl:mr-0">
+                                ?</div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 id="chat-with-name" class="font-bold dark:text-white">Loading...</h3>
+                                    <div id="status-indicator-header" class="w-2.5 h-2.5 rounded-full bg-gray-400">
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-gray-400">
+                                    <p id="chat-ad-title" class="truncate max-w-[200px]">Ad title here</p>
+                                    <span>•</span>
+                                    <div class="flex items-center">
+                                        <span id="user-status-label" data-translate="offline">Offline</span>
+                                        <span id="typing-indicator"
+                                            class="hidden ml-2 text-accent font-medium animate-pulse">... typing</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <a id="view-ad-link" href="#" class="text-accent text-sm font-medium hover:underline"
+                            data-translate="viewDetails">View Ad</a>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="messages-container"
+                        class="flex-grow messages-scroll overflow-y-auto p-4 space-y-4 bg-gray-50/30 dark:bg-gray-900/30">
+                        <!-- Messages will load here -->
+                    </div>
+
+                    <!-- Quick Replies -->
+                    <div id="quick-replies" class="px-4 py-2 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2 overflow-x-auto hide-scrollbar whitespace-nowrap">
+                        <!-- Loaded via JS -->
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+                        <form id="chat-form" class="flex gap-2 items-center">
+                            <input type="file" id="image-input" class="hidden" accept="image/*">
+                            <button type="button" id="photo-btn"
+                                class="text-gray-500 hover:text-accent p-2 rounded-full transition dark:text-gray-400">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </button>
+                            <input type="text" id="message-input" data-translate="typeMessage"
+                                placeholder="Type a message..."
+                                class="flex-grow bg-gray-100 dark:bg-gray-700 border-none rounded-full px-5 py-3 focus:ring-2 focus:ring-accent dark:text-white">
+                            <button type="submit"
+                                class="bg-accent text-white p-3 rounded-full hover:bg-orange-600 transition shadow-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 transform rotate-90 rtl:-rotate-90" fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+
+    <!-- Load scripts in correct order -->
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        window.currentConversationId = null;
+        let currentUser = JSON.parse(localStorage.getItem('user'));
+        
+        // Initial status update for chat header (will be overridden by live events)
+        function initChatHeader(otherUser) {
+            const statusDot = document.getElementById('status-indicator-header');
+            const statusLabel = document.getElementById('user-status-label');
+            if (statusDot) statusDot.setAttribute('data-user-status-id', otherUser.id);
+            if (statusLabel) statusLabel.setAttribute('data-user-status-id', otherUser.id);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+
+            // Check if conversationId is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const convoIdFromUrl = urlParams.get('conversationId');
+
+            await loadConversations();
+
+            if (convoIdFromUrl) {
+                openConversation(convoIdFromUrl);
+            }
+
+            // --- Socket Setup ---
+            const setupSocketListeners = () => {
+                if (!window.socket) {
+                    setTimeout(setupSocketListeners, 100);
+                    return;
+                }
+
+                window.socket.on('receive_message', (msg) => {
+                    // Ignore our own messages from socket since we manually append them immediately
+                    if (msg.senderId === currentUser.id) return;
+
+                    if (msg.conversationId == window.currentConversationId) {
+                        addMessageToUI(msg);
+
+                        // Mark as read immediately since we are in the chat
+                        apiClient.getChatMessages(msg.conversationId).catch(console.error);
+                    }
+                    // Also update the conversation list to show the new last message/timestamp
+                    loadConversations();
+                    // Refresh global unread count
+                    if (window.refreshUnreadCount) window.refreshUnreadCount();
+                });
+
+                window.socket.on('display_typing', (data) => {
+                    if (data.conversationId == window.currentConversationId && data.senderId !== currentUser.id) {
+                        const indicator = document.getElementById('typing-indicator');
+                        if (data.isTyping) {
+                            indicator.classList.remove('hidden');
+                        } else {
+                            indicator.classList.add('hidden');
+                        }
+                    }
+                });
+
+                window.socket.on('messages_read', (data) => {
+                    if (data.conversationId == window.currentConversationId && data.readBy !== currentUser.id) {
+                        // Update all my messages to "Read" (double ticks)
+                        document.querySelectorAll('.read-status').forEach(el => {
+                            el.innerHTML = '<svg class="w-3 h-3 text-blue-200 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12.01-12.01-1.43-1.4zM1 12l1.41-1.41L7.34 15.5 5.93 16.92 1 12z"/></svg>';
+                        });
+                    }
+                });
+
+                window.socket.on('user_status_changed', (data) => {
+                    // Update all status indicators on the page for this user
+                    const statusElements = document.querySelectorAll(`[data-user-status-id="${data.userId}"]`);
+                    statusElements.forEach(el => {
+                        if (el.tagName === 'SPAN') {
+                            // This is the text label in the header
+                            const lang = window.currentLang || 'en';
+                            if (data.isOnline) {
+                                el.textContent = (window.translations?.[lang]?.online) || 'Online';
+                                el.setAttribute('data-translate', 'online');
+                            } else {
+                                const offlineLabel = (window.translations?.[lang]?.offline) || 'Offline';
+                                const timeStr = new Date(data.lastActive || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                el.textContent = `${offlineLabel} - ${timeStr}`;
+                                el.removeAttribute('data-translate');
+                            }
+                        } else {
+                            // This is the dot (header or list)
+                            el.className = el.className.replace(/bg-(green|gray)-\d+/g, '');
+                            el.classList.add(data.isOnline ? 'bg-green-500' : 'bg-gray-400');
+                        }
+                    });
+                });
+            }
+
+            setupSocketListeners();
+
+            // Handle input for typing status
+            const messageInput = document.getElementById('message-input');
+            let typingTimeout;
+
+            messageInput.addEventListener('input', () => {
+                if (!window.currentConversationId || !window.socket) return;
+
+                // Emit typing status
+                window.socket.emit('typing', {
+                    conversationId: window.currentConversationId,
+                    senderId: currentUser.id,
+                    isTyping: true
+                });
+
+                // Clear existing timeout
+                clearTimeout(typingTimeout);
+
+                // Set timeout to stop typing status after 2 seconds of inactivity
+                typingTimeout = setTimeout(() => {
+                    if(window.socket){
+                        window.socket.emit('typing', {
+                            conversationId: window.currentConversationId,
+                            senderId: currentUser.id,
+                            isTyping: false
+                        });
+                    }
+                }, 2000);
+            });
+
+            // Periodic refresh for the conversation list
+            setInterval(loadConversations, 30000); // 30s is enough for the list
+        });
+
+        async function loadConversations() {
+            try {
+                const response = await apiClient.getConversations();
+                const conversations = response.data;
+                const list = document.getElementById('conversations-list');
+
+                if (conversations.length === 0) {
+                    list.innerHTML = `
+                        <div class="p-8 text-center">
+                            <p class="text-gray-400 text-sm" data-translate="startChatting">Start chatting with sellers to see your messages here.</p>
+                        </div>
+                    `;
+                    if (window.translatePage) window.translatePage();
+                    return;
+                }
+
+                list.innerHTML = '';
+                conversations.forEach(convo => {
+                    const isBuyer = convo.buyerId === currentUser.id;
+                    const otherUser = isBuyer ? convo.seller : convo.buyer;
+                    const isActive = convo.id == window.currentConversationId;
+                    const unreadCount = convo.unreadCount || 0;
+                    const isDefaultAvatar = !otherUser.avatar || otherUser.avatar.includes('gravatar.com/avatar/00000000000000000000000000000000');
+                    const initials = otherUser.name ? otherUser.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+                    const avatarContent = isDefaultAvatar 
+                        ? initials 
+                        : `<img src="${otherUser.avatar}" class="w-full h-full rounded-full object-cover">`;
+
+                    const item = `
+                        <div onclick="openConversation(${convo.id})" 
+                             class="p-4 border-b dark:border-gray-700 cursor-pointer transition flex items-center relative hover:bg-gray-50 dark:hover:bg-gray-700/50 ${isActive ? 'bg-orange-50 dark:bg-accent/10 border-l-4 border-l-accent' : ''}">
+                            <div class="relative flex-shrink-0">
+                                <div class="w-12 h-12 rounded-full ${isDefaultAvatar ? 'bg-accent' : ''} flex items-center justify-center text-white font-bold overflow-hidden">
+                                    ${avatarContent}
+                                </div>
+                                <div data-user-status-id="${otherUser.id}" class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${otherUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}"></div>
+                            </div>
+
+                            <div class="flex-grow min-w-0 min-h-[48px]">
+                                <div class="flex justify-between items-baseline">
+                                    <h4 class="font-bold text-sm dark:text-white truncate">${otherUser.name}</h4>
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-[10px] text-gray-400">${new Date(convo.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        ${unreadCount > 0 ? `<span class="bg-accent text-white text-[10px] px-1.5 py-0.5 rounded-full mt-1 font-bold">${unreadCount}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs text-gray-500 truncate mr-2">${convo.ad ? convo.ad.title : 'Deleted Ad'}</p>
+                                    <button onclick="deleteConversation(event, ${convo.id})" class="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-opacity" title="Delete chat">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    list.insertAdjacentHTML('beforeend', item);
+                });
+
+                // Translate the newly injected HTML
+                if (window.translatePage) window.translatePage();
+            } catch (err) {
+                console.error('Error loading convos:', err);
+            }
+        }
+
+        async function deleteConversation(event, convoId) {
+            event.stopPropagation();
+            if (!await customConfirm('Are you sure you want to delete this conversation?')) return;
+
+            try {
+                const response = await fetch(`/api/chat/conversation/${convoId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    if (window.currentConversationId == convoId) {
+                        window.currentConversationId = null;
+                        document.getElementById('no-chat-selected').classList.remove('hidden');
+                        document.getElementById('active-chat').classList.add('hidden');
+                    }
+                    loadConversations();
+                } else {
+                    await customAlert('Error: ' + result.message);
+                }
+            } catch (err) {
+                console.error('Error deleting convo:', err);
+            }
+        }
+
+        async function openConversation(convoId) {
+            window.currentConversationId = convoId;
+            document.getElementById('no-chat-selected').classList.add('hidden');
+            document.getElementById('active-chat').classList.remove('hidden');
+
+            // Mark the active item in list
+            document.querySelectorAll('.conversation-item').forEach(el => {
+                if (el.getAttribute('data-convo-id') == convoId) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            // Refresh global unread count as some were marked read
+            if (window.refreshUnreadCount) window.refreshUnreadCount();
+
+            try {
+                // Join Socket Room
+                window.socket.emit('join_conversation', convoId);
+
+                const response = await apiClient.getChatMessages(convoId);
+                const messages = response.data;
+                const container = document.getElementById('messages-container');
+
+                // Get convo details
+                const convoResponse = await apiClient.getConversations();
+                const convo = convoResponse.data.find(c => c.id == convoId);
+
+                if (convo) {
+                    const otherUser = convo.buyerId === currentUser.id ? convo.seller : convo.buyer;
+                    document.getElementById('chat-with-name').textContent = otherUser.name;
+                    document.getElementById('chat-ad-title').textContent = convo.ad ? convo.ad.title : '';
+                    document.getElementById('view-ad-link').href = `ad-details.html?id=${convo.adId}`;
+                    
+                    const avatarContainer = document.getElementById('chat-with-avatar');
+                    const isDefaultAvatar = !otherUser.avatar || otherUser.avatar.includes('gravatar.com/avatar/00000000000000000000000000000000');
+                    if (!isDefaultAvatar) {
+                        avatarContainer.innerHTML = `<img src="${otherUser.avatar}" class="w-full h-full rounded-full object-cover">`;
+                        avatarContainer.classList.remove('bg-accent');
+                    } else {
+                        const initials = otherUser.name ? otherUser.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+                        avatarContainer.textContent = initials;
+                        avatarContainer.classList.add('bg-accent');
+                    }
+
+                    // Update Status Indicator
+                    const statusDot = document.getElementById('status-indicator-header');
+                    const statusLabel = document.getElementById('user-status-label');
+                    statusDot.setAttribute('data-user-status-id', otherUser.id);
+                    statusLabel.setAttribute('data-user-status-id', otherUser.id);
+
+                    const lang = window.currentLang || 'en';
+                    if (otherUser.isOnline) {
+                        statusDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500';
+                        statusLabel.setAttribute('data-translate', 'online');
+                        statusLabel.textContent = (window.translations?.[lang]?.online) || (translations?.[lang]?.online) || 'Online';
+                    } else {
+                        statusDot.className = 'w-2.5 h-2.5 rounded-full bg-gray-400';
+                        const lastSeen = new Date(otherUser.lastActive);
+                        const offlineLabel = (window.translations?.[lang]?.offline) || (translations?.[lang]?.offline) || 'Offline';
+                        statusLabel.textContent = `${offlineLabel} - ${lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                        statusLabel.removeAttribute('data-translate');
+                    }
+                }
+
+                renderMessages(messages);
+                loadQuickReplies(convo);
+
+            } catch (err) {
+                console.error('Error opening chat:', err);
+            }
+        }
+
+        const quickReplyOptions = [
+            'isStillAvailable',
+            'whatIsBestPrice',
+            'canIViewItem',
+            'whereIsLocation'
+        ];
+
+        function loadQuickReplies(convo) {
+            const container = document.getElementById('quick-replies');
+            if (!convo || !convo.ad || convo.ad.status !== 'active') {
+                container.classList.add('hidden');
+                return;
+            }
+            container.classList.remove('hidden');
+            container.innerHTML = '';
+
+            const lang = window.currentLang || 'en';
+            quickReplyOptions.forEach(key => {
+                const text = (translations[lang] && translations[lang][key]) || key;
+                const btn = document.createElement('button');
+                btn.className = 'px-4 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-accent hover:text-white text-gray-700 dark:text-gray-200 rounded-full text-xs font-bold transition-all whitespace-nowrap shadow-sm';
+                btn.textContent = text;
+                btn.onclick = () => sendQuickReply(text);
+                container.appendChild(btn);
+            });
+        }
+
+        async function sendQuickReply(message) {
+            if (!window.currentConversationId) return;
+            try {
+                const response = await apiClient.sendMessage(window.currentConversationId, message);
+                if (response.success && response.data) {
+                    addMessageToUI(response.data);
+                    loadConversations();
+                }
+            } catch (err) {
+                console.error('Error sending quick reply:', err);
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '';
+            messages.forEach(msg => {
+                addMessageToUI(msg, false);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessageToUI(msg, scroll = true) {
+            const container = document.getElementById('messages-container');
+            const isMine = msg.senderId === currentUser.id;
+
+            const hasImage = !!msg.image;
+            const hasText = msg.message && msg.message.trim() !== '';
+
+            let contentHtml = '';
+            if (hasImage) {
+                contentHtml += `<img src="${msg.image}" class="max-w-full rounded-xl mb-1 cursor-pointer hover:opacity-90 transition" onclick="window.open('${msg.image}', '_blank')">`;
+            }
+            if (hasText) {
+                contentHtml += `<p class="text-sm">${msg.message}</p>`;
+            }
+
+            // Use less padding for image-only messages
+            const paddingClass = (hasImage && !hasText) ? 'p-1' : 'px-4 py-2';
+
+            const statusHtml = isMine ? `
+                <span class="ml-1 inline-block read-status">
+                    ${msg.isRead ?
+                    '<svg class="w-3 h-3 text-blue-200 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12.01-12.01-1.43-1.4zM1 12l1.41-1.41L7.34 15.5 5.93 16.92 1 12z"/></svg>' :
+                    '<svg class="w-3 h-3 text-orange-200 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'}
+                </span>
+            ` : '';
+
+            const msgHtml = `
+                <div class="flex ${isMine ? 'justify-end' : 'justify-start'} animate-fade-in mb-4">
+                    <div class="max-w-[75%] ${paddingClass} rounded-2xl ${isMine ? 'bg-accent text-white rounded-tr-none' : 'bg-white dark:bg-gray-700 dark:text-white border dark:border-gray-600 rounded-tl-none shadow-sm'}">
+                        ${contentHtml}
+                        <div class="flex items-center justify-end mt-1 px-2">
+                             <span class="text-[9px] ${isMine ? 'text-orange-100' : 'text-gray-400'} block">
+                                ${new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            ${statusHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', msgHtml);
+            if (scroll) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        document.getElementById('photo-btn').addEventListener('click', () => {
+            document.getElementById('image-input').click();
+        });
+
+        document.getElementById('image-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !window.currentConversationId) return;
+
+            try {
+                // Show a loading/uploading state if needed
+                const btn = document.getElementById('photo-btn');
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-5 h-5 animate-spin text-accent" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                
+                const response = await apiClient.sendMessage(window.currentConversationId, null, file);
+                if (response.success && response.data) {
+                    addMessageToUI(response.data);
+                    loadConversations();
+                    e.target.value = ''; // Reset input
+                }
+                btn.innerHTML = origHtml;
+            } catch (err) {
+                await customAlert('Failed to send image: ' + err.message);
+                const btn = document.getElementById('photo-btn');
+                btn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`;
+            }
+        });
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message || !window.currentConversationId) return;
+
+            input.value = '';
+
+            try {
+                const response = await apiClient.sendMessage(window.currentConversationId, message);
+                if (response.success && response.data) {
+                    addMessageToUI(response.data);
+                    loadConversations();
+                }
+            } catch (err) {
+                console.error('Error sending message:', err);
+            }
+        });
+    </script>
+</body>
+
+</html>

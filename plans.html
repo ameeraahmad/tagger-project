@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="plansTitle">Pricing Plans - Tagger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B2447',
+                        secondary: '#F5F5F5',
+                        accent: '#FF6B00',
+                        success: '#00C853',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Apply theme immediately to prevent flashing
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body
+    class="bg-gray-50 dark:bg-gray-900 font-sans leading-normal tracking-normal text-gray-800 dark:text-gray-100 transition-colors duration-300">
+
+    <!-- Header Placeholder -->
+    <div id="global-header-placeholder"></div>
+
+    <!-- ✅ Success / ❌ Cancel Banners -->
+    <div id="payment-success-banner"
+        class="hidden fixed top-0 left-0 right-0 z-50 bg-green-500 text-white text-center py-4 px-6 text-lg font-bold shadow-lg animate-fade-in">
+        🎉 Payment Successful! Your plan is now active. Check your <a href="dashboard.html"
+            class="underline">Dashboard</a>.
+    </div>
+    <div id="payment-cancel-banner"
+        class="hidden fixed top-0 left-0 right-0 z-50 bg-red-500 text-white text-center py-4 px-6 text-lg font-bold shadow-lg animate-fade-in">
+        ❌ Payment was cancelled. No charge was made. <button
+            onclick="document.getElementById('payment-cancel-banner').classList.add('hidden')"
+            class="ml-4 underline">Dismiss</button>
+    </div>
+
+    <!-- Plans Content -->
+    <main class="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4"
+                data-translate="plansTitle">Pricing Plans</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto" data-translate="plansSubtitle">Choose
+                the perfect plan to boost your listings and reach more buyers.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Free Plan -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col hover:scale-105 transition duration-300">
+                <div class="p-8 border-b dark:border-gray-700">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4" data-translate="freePlan">Free
+                    </h3>
+                    <div class="flex items-baseline">
+                        <span class="text-4xl font-extrabold text-primary dark:text-white currency-label"></span>
+                        <span class="text-6xl font-extrabold text-primary dark:text-white mx-2"
+                            data-translate="freePrice">0</span>
+                        <span class="text-gray-500 dark:text-gray-400" data-translate="perMonth">per month</span>
+                    </div>
+                </div>
+                <div class="p-8 flex-grow">
+                    <ul class="space-y-4">
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span data-translate="planFeature1">Up to 5 active ads</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span data-translate="planFeature2">Standard visibility</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span data-translate="planFeature3">Email support</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-8">
+                    <button id="btn-free"
+                        class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-4 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                        onclick="window.location.href='select-category.html'" data-translate="getStarted">Get Started
+                        Free</button>
+                </div>
+            </div>
+
+            <!-- Basic Plan -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col hover:scale-105 transition duration-300">
+                <div class="p-8 border-b dark:border-gray-700">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4" data-translate="basicPlan">Basic
+                    </h3>
+                    <div class="flex items-baseline">
+                        <span class="text-4xl font-extrabold text-primary dark:text-white currency-label"></span>
+                        <span class="text-6xl font-extrabold text-primary dark:text-white mx-2">39</span>
+                        <span class="text-gray-500 dark:text-gray-400" data-translate="perMonth">per month</span>
+                    </div>
+                </div>
+                <div class="p-8 flex-grow">
+                    <ul class="space-y-4">
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>5 Ads per month</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Standard listing</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Email support</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-8">
+                    <button id="btn-basic" data-plan="basic"
+                        class="plan-btn w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-blue-900 transition"
+                        data-translate="getStarted">Get Started</button>
+                </div>
+            </div>
+
+            <!-- Standard Plan (Popular) -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border-2 border-accent flex flex-col scale-110 z-10 relative">
+                <div class="absolute top-0 right-0 bg-accent text-white px-6 py-1 rounded-bl-xl text-sm font-bold"
+                    data-translate="popular">Most Popular</div>
+                <div class="p-8 border-b dark:border-gray-700 pt-12">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4" data-translate="standardPlan">
+                        Standard</h3>
+                    <div class="flex items-baseline">
+                        <span class="text-4xl font-extrabold text-accent currency-label"></span>
+                        <span class="text-6xl font-extrabold text-accent mx-2">99</span>
+                        <span class="text-gray-500 dark:text-gray-400" data-translate="perMonth">per month</span>
+                    </div>
+                </div>
+                <div class="p-8 flex-grow">
+                    <ul class="space-y-4">
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-accent mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>20 Ads per month</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-accent mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Priority listing</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-accent mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Chat support + 3 Featured Ads</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-accent mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Verified seller badge</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-8">
+                    <button id="btn-standard" data-plan="standard"
+                        class="plan-btn w-full bg-accent text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition shadow-lg shadow-orange-200 dark:shadow-none"
+                        data-translate="getStarted">Get Started</button>
+                </div>
+            </div>
+
+            <!-- Premium Plan -->
+            <div
+                class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700 flex flex-col hover:scale-105 transition duration-300">
+                <div class="p-8 border-b dark:border-gray-700">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4" data-translate="premiumPlan">
+                        Premium</h3>
+                    <div class="flex items-baseline">
+                        <span class="text-4xl font-extrabold text-primary dark:text-white currency-label"></span>
+                        <span class="text-6xl font-extrabold text-primary dark:text-white mx-2">199</span>
+                        <span class="text-gray-500 dark:text-gray-400" data-translate="perMonth">per month</span>
+                    </div>
+                </div>
+                <div class="p-8 flex-grow">
+                    <ul class="space-y-4">
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Unlimited Ads</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Top listing + Unlimited Featured</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Dedicated support</span>
+                        </li>
+                        <li class="flex items-center text-gray-600 dark:text-gray-300">
+                            <svg class="w-5 h-5 text-success mr-3 rtl:ml-3 rtl:mr-0" fill="currentColor"
+                                viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Analytics Dashboard</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="p-8">
+                    <button id="btn-premium" data-plan="premium"
+                        class="plan-btn w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-blue-900 transition"
+                        data-translate="getStarted">Get Started</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Placeholder -->
+    <div id="global-footer-placeholder"></div>
+
+
+    <script src="assets/js/en.js"></script>
+    <script src="assets/js/ar.js"></script>
+    <script src="assets/js/api-client.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const adId = urlParams.get('adId');
+
+            // ─── Handle redirect back from Stripe ───────────────────────────
+            if (urlParams.get('success') === 'true') {
+                const banner = document.getElementById('payment-success-banner');
+                banner.classList.remove('hidden');
+                window.scrollTo(0, 0);
+
+                // Verify payment on backend (optional: update UI based on plan)
+                const sessionId = urlParams.get('session_id');
+                if (sessionId) {
+                    try {
+                        await apiClient.fetch(`/payments/verify-session/${sessionId}`);
+                    } catch (e) { /* silent */ }
+                }
+
+                // Clean URL
+                history.replaceState({}, document.title, '/plans.html');
+            }
+
+            if (urlParams.get('canceled') === 'true') {
+                document.getElementById('payment-cancel-banner').classList.remove('hidden');
+                window.scrollTo(0, 0);
+                history.replaceState({}, document.title, '/plans.html');
+            }
+
+            // ─── Connect plan buttons to Stripe Checkout ─────────────────────
+            document.querySelectorAll('.plan-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        window.location.href = 'login.html?redirect=plans.html';
+                        return;
+                    }
+
+                    const plan = btn.dataset.plan;
+                    if (!plan) return;
+
+                    const originalText = btn.textContent;
+                    btn.disabled = true;
+                    btn.textContent = translations[localStorage.getItem('lang') || 'en'].redirectingToCheckout || '⏳ Redirecting to checkout...';
+
+                    try {
+                        const body = { plan };
+                        if (adId) body.adId = adId;
+
+                        const res = await apiClient.fetch('/payments/create-checkout-session', {
+                            method: 'POST',
+                            body: JSON.stringify(body)
+                        });
+
+                        if (res.success && res.url) {
+                            window.location.href = res.url; // Redirect to Stripe
+                        } else {
+                            throw new Error(res.message || 'Failed to create checkout session');
+                        }
+                    } catch (err) {
+                        await customAlert('❌ ' + err.message);
+                        btn.disabled = false;
+                        btn.textContent = originalText;
+                    }
+                });
+            });
+            // ─── Update Currency Labels ─────────────────────
+            if (window.getCurrencySymbol) {
+                const symbol = window.getCurrencySymbol();
+                document.querySelectorAll('.currency-label').forEach(el => el.textContent = symbol);
+            }
+        });
+    </script>
+</body>
+
+</html>
